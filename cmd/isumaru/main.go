@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/karamaru-alpha/isumaru/pkg/agent"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru"
 )
 
 func main() {
@@ -11,10 +11,11 @@ func main() {
 }
 
 func cmd() (code int) {
-	config := &agent.Config{
+	config := &isumaru.Config{
 		Port: getEnv("PORT", "19000"),
 	}
-	agent.Serve(config)
+
+	isumaru.Serve(config)
 	return 0
 }
 
