@@ -1,4 +1,4 @@
-package agent
+package isumaru
 
 import (
 	"fmt"
@@ -9,8 +9,10 @@ import (
 	"golang.org/x/exp/slog"
 	"golang.org/x/net/http2"
 
-	"github.com/karamaru-alpha/isumaru/pkg/agent/handler"
-	"github.com/karamaru-alpha/isumaru/pkg/agent/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/handler"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/infra/port"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/infra/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/usecase"
 )
 
 type Config struct {
@@ -24,10 +26,21 @@ func Serve(c *Config) {
 
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
-	e.Use(middleware.Gzip())
+	e.Use(middleware.CORS())
 
-	mysqlInteractor := usecase.NewMysqlInteractor()
+	agentPort := port.NewAgentPort()
+
+	mysqlRepository := repository.NewSlowQueryLogRepository()
+	settingRepository := repository.NewSettingRepository()
+
+	mysqlInteractor := usecase.NewMysqlInteractor(agentPort, mysqlRepository)
+	settingInteractor := usecase.NewSettingInteractor(settingRepository)
+
 	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
+	settingHandler := handler.NewSettingHandler(settingInteractor)
+
+	e.GET("/setting", settingHandler.Get)
+	e.POST("/setting", settingHandler.Update)
 	e.POST("/mysql/collect", mysqlHandler.Collect)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
