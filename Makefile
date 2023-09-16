@@ -2,7 +2,7 @@ include .env
 
 .PHONY: run
 run:
-	PORT=${ISUMARU_PORT} go run cmd/isumaru/main.go
+	PORT=${ISUMARU_PORT} AGENT_URL=${AGENT_URL} go run cmd/isumaru/main.go
 
 .PHONY: run-agent
 run-agent:

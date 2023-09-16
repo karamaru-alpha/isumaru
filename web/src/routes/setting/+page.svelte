@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import {onMount} from 'svelte';
     import {
         Button,
@@ -6,11 +6,11 @@
         TextInput,
     } from "carbon-components-svelte";
 
-    let seconds;
-    let mainServerAddress;
-    let accessLogPath;
-    let mysqlServerAddress;
-    let slowQueryLogPath;
+    let seconds: number;
+    let mainServerAddress: string;
+    let accessLogPath: string;
+    let mysqlServerAddress: string;
+    let slowQueryLogPath: string;
 
     onMount(async () => {
         try {
@@ -47,6 +47,9 @@
         }
     }
 </script>
+
+<h1>Setting</h1>
+<br />
 
 <Form on:submit={onSubmit}>
 
