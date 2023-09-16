@@ -12,7 +12,8 @@ func main() {
 
 func cmd() (code int) {
 	config := &isumaru.Config{
-		Port: getEnv("PORT", "19000"),
+		Port:     getEnv("PORT", "8000"),
+		AgentURL: getEnv("AgentURL", "http://localhost:19000"),
 	}
 
 	isumaru.Serve(config)
