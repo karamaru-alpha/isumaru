@@ -26,7 +26,9 @@ type MysqlInteractor interface {
 	// GetEntries Fileからスロークエリログの一覧を取得する
 	GetEntries(ctx context.Context) (entity.Entries, error)
 	// GetSlowQueries Fileからスロークエリログを解析する
-	GetSlowQueries(ctx context.Context, id string) ([]byte, error)
+	GetSlowQueries(ctx context.Context, id, targetID string) ([]byte, error)
+	// GetTargetIDs エントリの対象一覧を取得する
+	GetTargetIDs(ctx context.Context, id string) ([]string, error)
 }
 
 type mysqlInteractor struct {
@@ -107,7 +109,11 @@ func (i *mysqlInteractor) Collect(ctx context.Context) error {
 			}
 
 			// スロークエリログをファイルに保存する
-			path := fmt.Sprintf("%s/%d", constant.IsumaruSlowQueryLogDir, unixTime)
+			dir := fmt.Sprintf("%s/%d", constant.IsumaruSlowQueryLogDir, unixTime)
+			if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+				panic(err)
+			}
+			path := fmt.Sprintf("%s/%s", dir, target.ID)
 			file, err := os.Create(path)
 			if err != nil {
 				return err
@@ -136,14 +142,31 @@ func (i *mysqlInteractor) GetEntries(ctx context.Context) (entity.Entries, error
 	return entries, nil
 }
 
-func (i *mysqlInteractor) GetSlowQueries(ctx context.Context, id string) ([]byte, error) {
-	path := fmt.Sprintf("%s/%s", constant.IsumaruSlowQueryLogDir, id)
-
+func (i *mysqlInteractor) GetSlowQueries(ctx context.Context, id, targetID string) ([]byte, error) {
+	path := fmt.Sprintf("%s/%s/%s", constant.IsumaruSlowQueryLogDir, id, targetID)
 	cmd := exec.CommandContext(ctx, "slp", "--output", "standard", "--format", "tsv", "--file", path)
-	res, err := cmd.Output()
+	data, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
 
-	return res, nil
+	return data, nil
+}
+
+func (i *mysqlInteractor) GetTargetIDs(_ context.Context, id string) ([]string, error) {
+	dir := fmt.Sprintf("%s/%s", constant.IsumaruSlowQueryLogDir, id)
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	targetIDs := make([]string, 0, len(dirEntries))
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			continue
+		}
+		targetIDs = append(targetIDs, dirEntry.Name())
+	}
+
+	return targetIDs, nil
 }

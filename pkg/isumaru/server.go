@@ -43,7 +43,8 @@ func Serve(c *Config) {
 	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
 	e.POST("/mysql/collect", mysqlHandler.Collect)
 	e.GET("/mysql", mysqlHandler.GetEntries)
-	e.GET("/mysql/:id", mysqlHandler.GetSlowQueries)
+	e.GET("/mysql/:id/:targetID", mysqlHandler.GetSlowQueries)
+	e.GET("/mysql/:id", mysqlHandler.GetSlowQueryTargets)
 
 	if err := os.MkdirAll(constant.IsumaruSlowQueryLogDir, os.ModePerm); err != nil {
 		panic(err)

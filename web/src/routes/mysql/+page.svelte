@@ -11,6 +11,7 @@
     let entries: {
         id: string;
         time: string;
+        targets: string[];
     }[];
     onMount(async () => {
         try {
@@ -19,7 +20,8 @@
             entries = data.entries.map(e => {
                 return {
                     id: e.id,
-                    time: new Date(e.unixTime * 1000).toLocaleString()
+                    time: new Date(e.unixTime * 1000).toLocaleString(),
+                    targets: e.targetIDs,
                 }
             });
         } catch (e) {
@@ -43,13 +45,14 @@
     sortable
     headers={[
         { key: "id", value: "ID" },
+        { key: "targets", value: "Targets" },
         { key: "time", value: "Time" },
     ]}
     rows={entries}
 >
-    <svelte:fragment slot="cell" let:cell>
+    <svelte:fragment slot="cell" let:cell let:row>
         {#if cell.key === "id"}
-            <Link icon={Launch} href="/mysql/{cell.value}">
+            <Link icon={Launch} href="/mysql/{cell.value}/{row.targets[0]}">
                 {cell.value}
             </Link>
         {:else}

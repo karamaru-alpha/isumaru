@@ -14,6 +14,7 @@ type MysqlHandler interface {
 	Collect(c echo.Context) error
 	GetEntries(c echo.Context) error
 	GetSlowQueries(c echo.Context) error
+	GetSlowQueryTargets(c echo.Context) error
 }
 
 type mysqlHandler struct {
@@ -39,8 +40,9 @@ type MysqlGetEntriesResponse struct {
 }
 
 type MysqlEntry struct {
-	ID       string `json:"id"`
-	UnixTime int64  `json:"unixTime"`
+	ID        string   `json:"id"`
+	UnixTime  int64    `json:"unixTime"`
+	TargetIDs []string `json:"targetIDs"`
 }
 
 func (h *mysqlHandler) GetEntries(c echo.Context) error {
@@ -54,15 +56,26 @@ func (h *mysqlHandler) GetEntries(c echo.Context) error {
 	return c.JSON(http.StatusOK, toMysqlGetEntriesResponse(res))
 }
 
-type MysqlGetSlowQueriesRequest struct {
-	ID string `json:"id" validate:"required"`
+func toMysqlGetEntriesResponse(entries entity.Entries) *MysqlGetEntriesResponse {
+	response := &MysqlGetEntriesResponse{
+		Entries: make([]*MysqlEntry, 0, len(entries)),
+	}
+	for _, e := range entries {
+		response.Entries = append(response.Entries, &MysqlEntry{
+			ID:        e.ID,
+			UnixTime:  e.Time.Unix(),
+			TargetIDs: e.TargetIDs,
+		})
+	}
+	return response
 }
 
 func (h *mysqlHandler) GetSlowQueries(c echo.Context) error {
 	id := c.Param("id")
+	targetID := c.Param("targetID")
 
 	ctx := c.Request().Context()
-	data, err := h.interactor.GetSlowQueries(ctx, id)
+	data, err := h.interactor.GetSlowQueries(ctx, id, targetID)
 	if err != nil {
 		return err
 	}
@@ -70,15 +83,20 @@ func (h *mysqlHandler) GetSlowQueries(c echo.Context) error {
 	return c.Stream(http.StatusOK, "application/json", bytes.NewBuffer(data))
 }
 
-func toMysqlGetEntriesResponse(entries entity.Entries) *MysqlGetEntriesResponse {
-	response := &MysqlGetEntriesResponse{
-		Entries: make([]*MysqlEntry, 0, len(entries)),
+type GetSlowQueryTargetsResponse struct {
+	TargetIDs []string `json:"targetIDs"`
+}
+
+func (h *mysqlHandler) GetSlowQueryTargets(c echo.Context) error {
+	id := c.Param("id")
+
+	ctx := c.Request().Context()
+	targetIDs, err := h.interactor.GetTargetIDs(ctx, id)
+	if err != nil {
+		return err
 	}
-	for _, e := range entries {
-		response.Entries = append(response.Entries, &MysqlEntry{
-			ID:       e.ID,
-			UnixTime: e.Time.Unix(),
-		})
-	}
-	return response
+
+	return c.JSON(http.StatusOK, &GetSlowQueryTargetsResponse{
+		TargetIDs: targetIDs,
+	})
 }
