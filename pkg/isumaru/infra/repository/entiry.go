@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"sort"
 	"strconv"
@@ -19,18 +20,16 @@ func NewEntryRepository() repository.EntryRepository {
 	return &entryRepository{}
 }
 
-var entry *entity.Entry
-
 func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.EntryType) (entity.Entries, error) {
-	var dirPath string
+	var dir string
 	switch entryType {
 	case entity.EntryTypeMysql:
-		dirPath = constant.IsumaruSlowQueryLogDir
+		dir = constant.IsumaruSlowQueryLogDir
 	default:
 		return nil, errors.New("invalid entry type")
 	}
 
-	dirEntries, err := os.ReadDir(dirPath)
+	dirEntries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -38,20 +37,34 @@ func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.
 		return dirEntries[i].Name() > dirEntries[j].Name()
 	})
 	entries := make(entity.Entries, 0, len(dirEntries))
-	for _, e := range dirEntries {
-		if e.IsDir() {
+	for _, dirEntry := range dirEntries {
+		if !dirEntry.IsDir() {
 			continue
 		}
-		unixStr := e.Name()
+		unixStr := dirEntry.Name()
 		unix, err := strconv.ParseInt(unixStr, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 
+		targetDir := fmt.Sprintf("%s/%s", constant.IsumaruSlowQueryLogDir, unixStr)
+		targetsDirEntries, err := os.ReadDir(targetDir)
+		if err != nil {
+			return nil, err
+		}
+		targetIDs := make([]string, 0, len(targetsDirEntries))
+		for _, targetDirEntry := range targetsDirEntries {
+			if targetDirEntry.IsDir() {
+				continue
+			}
+			targetIDs = append(targetIDs, targetDirEntry.Name())
+		}
+
 		entries = append(entries, &entity.Entry{
-			ID:   unixStr,
-			Type: entryType,
-			Time: time.Unix(unix, 0),
+			ID:        unixStr,
+			Type:      entryType,
+			Time:      time.Unix(unix, 0),
+			TargetIDs: targetIDs,
 		})
 	}
 

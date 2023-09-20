@@ -1,11 +1,16 @@
 <script lang="ts">
-    import { DataTable } from "carbon-components-svelte";
     import { page } from '$app/stores';
+    import {
+        DataTable,
+        Button,
+    } from "carbon-components-svelte";
+    import Cube from "carbon-icons-svelte/lib/Cube.svelte";
     import {onMount} from "svelte";
 
 
     const id = $page.params.id;
-
+    const currentTargetID = $page.params.targetID;
+    let targetIDs: string[] = [];
     let headers: {
         key: string,
         value: string
@@ -14,7 +19,15 @@
 
     onMount(async () => {
         try {
-            const res = await fetch("http://localhost:8000/mysql/" + id)
+            const res = await fetch(`http://localhost:8000/mysql/${id}`)
+            const json = await res.json();
+            targetIDs = json.targetIDs;
+        } catch (e) {
+            console.log(e)
+        }
+
+        try {
+            const res = await fetch(`http://localhost:8000/mysql/${id}/${currentTargetID}`)
             const tsv = await res.text();
             let lines = tsv.split('\n');
             if (tsv.endsWith('\n')) {
@@ -36,9 +49,13 @@
     });
 </script>
 
-
-<h1>Mysql {id}</h1>
+{#each targetIDs as targetID, index}
+    <Button kind={targetID == currentTargetID ? "primary" : "tertiary"} size="small" icon={Cube} on:click={window.location.href = `/mysql/${id}/${targetID}`}>{targetID}</Button>
+{/each}
 <br />
+<br />
+
+<p>Mysql ({new Date(id * 1000).toLocaleString()})</p>
 
 <DataTable
     sortable

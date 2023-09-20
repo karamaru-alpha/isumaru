@@ -5,10 +5,10 @@ import (
 )
 
 type Entry struct {
-	ID       string
-	Type     EntryType
-	FileSize int64
-	Time     time.Time
+	ID        string
+	Type      EntryType
+	Time      time.Time
+	TargetIDs []string
 }
 
 type Entries []*Entry
