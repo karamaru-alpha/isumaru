@@ -31,15 +31,16 @@ func Serve(c *Config) {
 	e.Use(middleware.CORS())
 
 	entryRepository := repository.NewEntryRepository()
-	settingRepository := repository.NewSettingRepository()
-	mysqlInteractor := usecase.NewMysqlInteractor(c.AgentURL, entryRepository)
-	settingInteractor := usecase.NewSettingInteractor(settingRepository)
+	targetRepository := repository.NewTargetRepository()
+	mysqlInteractor := usecase.NewMysqlInteractor(entryRepository, targetRepository)
+	settingInteractor := usecase.NewSettingInteractor(targetRepository)
 
 	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
 	settingHandler := handler.NewSettingHandler(settingInteractor)
 
-	e.GET("/setting", settingHandler.Get)
-	e.POST("/setting", settingHandler.Update)
+	e.GET("/setting", settingHandler.Top)
+	e.POST("/setting/target", settingHandler.UpdateTargets)
+	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
 	e.POST("/mysql/collect", mysqlHandler.Collect)
 	e.GET("/mysql", mysqlHandler.GetEntries)
 	e.GET("/mysql/:id", mysqlHandler.GetSlowQueries)

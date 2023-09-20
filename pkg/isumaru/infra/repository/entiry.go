@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"sort"
 	"strconv"
 	"time"
 
@@ -33,7 +34,9 @@ func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.
 	if err != nil {
 		return nil, err
 	}
-
+	sort.Slice(dirEntries, func(i, j int) bool {
+		return dirEntries[i].Name() > dirEntries[j].Name()
+	})
 	entries := make(entity.Entries, 0, len(dirEntries))
 	for _, e := range dirEntries {
 		if e.IsDir() {
