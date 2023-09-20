@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,14 +13,16 @@ import (
 	"os/exec"
 	"time"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
 
 type MysqlInteractor interface {
-	// Collect 競技サーバーに問い合わせ、N秒間の間に出力されたスロークエリログをFileに保存する
-	Collect(ctx context.Context, seconds int32, path string) error
+	// Collect 競技サーバーに問い合わせ、スロークエリログをFileに保存する
+	Collect(ctx context.Context) error
 	// GetEntries Fileからスロークエリログの一覧を取得する
 	GetEntries(ctx context.Context) (entity.Entries, error)
 	// GetSlowQueries Fileからスロークエリログを解析する
@@ -27,17 +30,17 @@ type MysqlInteractor interface {
 }
 
 type mysqlInteractor struct {
-	agentURL        string
-	entryRepository repository.EntryRepository
+	entryRepository  repository.EntryRepository
+	targetRepository repository.TargetRepository
 }
 
 func NewMysqlInteractor(
-	agentURL string,
 	entryRepository repository.EntryRepository,
+	targetRepository repository.TargetRepository,
 ) MysqlInteractor {
 	return &mysqlInteractor{
-		agentURL,
 		entryRepository,
+		targetRepository,
 	}
 }
 
@@ -46,52 +49,78 @@ type AgentCollectSlowQueryLogRequest struct {
 	Path    string `json:"path"`
 }
 
-func (i *mysqlInteractor) Collect(ctx context.Context, seconds int32, slowQueryLogPath string) error {
-	// Agentに問い合わせてスロークエリログを取得する
-	requestBody, err := json.Marshal(&AgentCollectSlowQueryLogRequest{
-		Seconds: seconds,
-		Path:    slowQueryLogPath,
-	})
+func (i *mysqlInteractor) Collect(ctx context.Context) error {
+	targets, err := i.targetRepository.SelectByTargetType(ctx, entity.TargetTypeSlowQueryLog)
 	if err != nil {
 		return err
-	}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		http.MethodPost,
-		fmt.Sprintf("%s/mysql/collect", i.agentURL),
-		bytes.NewBuffer(requestBody))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept-Encoding", "gzip")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	var reader io.ReadCloser
-	switch resp.Header.Get("Content-Encoding") {
-	case "gzip":
-		gzipReader, err := gzip.NewReader(resp.Body)
-		if err != nil {
-			return err
-		}
-		defer gzipReader.Close()
-		reader = gzipReader
-	default:
-		reader = resp.Body
 	}
 
-	// スロークエリログをファイルに保存する
 	now := time.Now()
-	path := fmt.Sprintf("%s/%d", constant.IsumaruSlowQueryLogDir, now.UnixNano())
-	file, err := os.Create(path)
-	if err != nil {
-		return err
+	unixTime := now.Unix()
+
+	eg, ctx := errgroup.WithContext(ctx)
+	for _, target := range targets {
+		target := target
+		eg.Go(func() error {
+			// Agentに問い合わせてスロークエリログを取得する
+			requestBody, err := json.Marshal(&AgentCollectSlowQueryLogRequest{
+				Seconds: int32(target.Duration.Seconds()),
+				Path:    target.Path,
+			})
+			if err != nil {
+				return err
+			}
+			req, err := http.NewRequestWithContext(
+				ctx,
+				http.MethodPost,
+				fmt.Sprintf("%s/mysql/collect", target.URL),
+				bytes.NewBuffer(requestBody))
+			if err != nil {
+				return err
+			}
+			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Accept-Encoding", "gzip")
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				return errors.New(fmt.Sprintf("fail to collect slow query log. err=%+v", resp.Body))
+			}
+			if resp.ContentLength == 0 {
+				return errors.New("slow query log is empty")
+			}
+
+			var reader io.ReadCloser
+			switch resp.Header.Get("Content-Encoding") {
+			case "gzip":
+				gzipReader, err := gzip.NewReader(resp.Body)
+				if err != nil {
+					return err
+				}
+				defer gzipReader.Close()
+				reader = gzipReader
+			default:
+				reader = resp.Body
+			}
+
+			// スロークエリログをファイルに保存する
+			path := fmt.Sprintf("%s/%d", constant.IsumaruSlowQueryLogDir, unixTime)
+			file, err := os.Create(path)
+			if err != nil {
+				return err
+			}
+			if _, err := io.Copy(file, reader); err != nil {
+				return err
+			}
+
+			return nil
+		})
 	}
-	if _, err := io.Copy(file, reader); err != nil {
+
+	if err := eg.Wait(); err != nil {
 		return err
 	}
 

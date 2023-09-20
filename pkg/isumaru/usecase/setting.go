@@ -2,51 +2,78 @@ package usecase
 
 import (
 	"context"
+	"io"
+	"os"
 
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
 
 type SettingInteractor interface {
-	// Get 設定を取得する
-	Get(ctx context.Context) (*entity.Setting, error)
-	// Update 設定を更新する
-	Update(ctx context.Context, seconds int32, mainServerAddress, accessLogPath, mysqlServerAddress, slowQueryLogPath string) error
+	// Top 全設定を返却する
+	Top(ctx context.Context) (*SettingTopInfo, error)
+	// UpdateTargets ターゲット情報を更新する
+	UpdateTargets(ctx context.Context, targets entity.Targets) error
+	// UpdateSlpConfig slpのconfigファイルを更新する
+	UpdateSlpConfig(ctx context.Context, config string) error
 }
 
 type settingInteractor struct {
-	repository repository.SettingRepository
+	targetRepository repository.TargetRepository
 }
 
-func NewSettingInteractor(repository repository.SettingRepository) SettingInteractor {
+func NewSettingInteractor(targetRepository repository.TargetRepository) SettingInteractor {
 	return &settingInteractor{
-		repository,
+		targetRepository,
 	}
 }
 
-func (i *settingInteractor) Get(ctx context.Context) (*entity.Setting, error) {
-	setting, err := i.repository.Load(ctx)
+type SettingTopInfo struct {
+	Targets   entity.Targets
+	SlpConfig string
+}
+
+func (i *settingInteractor) Top(ctx context.Context) (*SettingTopInfo, error) {
+	targets, err := i.targetRepository.SelectAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return setting, nil
+	slpConfigFile, err := os.Open(constant.SlpConfigPath)
+	if err != nil {
+		return nil, err
+	}
+	defer slpConfigFile.Close()
+
+	slpConfigData, err := io.ReadAll(slpConfigFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SettingTopInfo{
+		Targets:   targets,
+		SlpConfig: string(slpConfigData),
+	}, nil
 }
 
-func (i *settingInteractor) Update(ctx context.Context, seconds int32, mainServerAddress, accessLogPath, mysqlServerAddress, slowQueryLogPath string) error {
-	setting, err := i.repository.Load(ctx)
+func (i *settingInteractor) UpdateTargets(ctx context.Context, targets entity.Targets) error {
+	if err := i.targetRepository.Update(ctx, targets); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *settingInteractor) UpdateSlpConfig(_ context.Context, config string) error {
+	file, err := os.Create(constant.SlpConfigPath)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	setting.Seconds = seconds
-	setting.MainServerAddress = mainServerAddress
-	setting.AccessLogPath = accessLogPath
-	setting.MysqlServerAddress = mysqlServerAddress
-	setting.SlowQueryLogPath = slowQueryLogPath
-	if err := i.repository.Update(ctx, setting); err != nil {
+	if _, err := file.WriteString(config); err != nil {
 		return err
 	}
-
 	return nil
 }

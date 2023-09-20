@@ -2,15 +2,18 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/usecase"
 )
 
 type SettingHandler interface {
-	Get(c echo.Context) error
-	Update(c echo.Context) error
+	Top(c echo.Context) error
+	UpdateTargets(c echo.Context) error
+	UpdateSlpConfig(e echo.Context) error
 }
 
 type settingHandler struct {
@@ -21,40 +24,66 @@ func NewSettingHandler(interactor usecase.SettingInteractor) SettingHandler {
 	return &settingHandler{interactor}
 }
 
-type SettingGetResponse struct {
-	Seconds            int32  `json:"seconds"`
-	MainServerAddress  string `json:"mainServerAddress"`
-	AccessLogPath      string `json:"accessLogPath"`
-	MysqlServerAddress string `json:"mysqlServerAddress"`
-	SlowQueryLogPath   string `json:"slowQueryLogPath"`
+type SettingTopResponse struct {
+	Targets   []*SettingTarget `json:"targets"`
+	SlpConfig string           `json:"slpConfig"`
 }
 
-func (h *settingHandler) Get(c echo.Context) error {
+type SettingTarget struct {
+	ID       string `json:"id"`
+	Type     int32  `json:"type"`
+	URL      string `json:"url"`
+	Path     string `json:"path"`
+	Duration int    `json:"duration"`
+}
+
+func (h *settingHandler) Top(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	setting, err := h.interactor.Get(ctx)
+	info, err := h.interactor.Top(ctx)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, &SettingGetResponse{
-		Seconds:            setting.Seconds,
-		MainServerAddress:  setting.MainServerAddress,
-		AccessLogPath:      setting.AccessLogPath,
-		MysqlServerAddress: setting.MysqlServerAddress,
-		SlowQueryLogPath:   setting.SlowQueryLogPath,
+	return c.JSON(http.StatusOK, &SettingTopResponse{
+		Targets:   toSettingTargets(info.Targets),
+		SlpConfig: info.SlpConfig,
 	})
 }
 
-type SettingUpdateRequest struct {
-	Seconds            int32  `json:"seconds" validate:"min=1"`
-	MainServerAddress  string `json:"mainServerAddress" validate:"required"`
-	AccessLogPath      string `json:"accessLogPath" validate:"required"`
-	MysqlServerAddress string `json:"mysqlServerAddress" validate:"required"`
-	SlowQueryLogPath   string `json:"slowQueryLogPath" validate:"required"`
+func toSettingTargets(targets entity.Targets) []*SettingTarget {
+	ret := make([]*SettingTarget, 0, len(targets))
+	for _, target := range targets {
+		ret = append(ret, &SettingTarget{
+			ID:       target.ID,
+			Type:     int32(target.Type),
+			URL:      target.URL,
+			Path:     target.Path,
+			Duration: int(target.Duration.Seconds()),
+		})
+	}
+	return ret
 }
 
-func (h *settingHandler) Update(c echo.Context) error {
+func toSettingTargetEntities(targets []*SettingTarget) entity.Targets {
+	ret := make(entity.Targets, 0, len(targets))
+	for _, target := range targets {
+		ret = append(ret, &entity.Target{
+			ID:       target.ID,
+			Type:     entity.TargetType(target.Type),
+			URL:      target.URL,
+			Path:     target.Path,
+			Duration: time.Second * time.Duration(target.Duration),
+		})
+	}
+	return ret
+}
+
+type SettingUpdateRequest struct {
+	Targets []*SettingTarget `json:"targets" validate:"required"`
+}
+
+func (h *settingHandler) UpdateTargets(c echo.Context) error {
 	r := &SettingUpdateRequest{}
 	if err := c.Bind(r); err != nil {
 		return err
@@ -64,7 +93,28 @@ func (h *settingHandler) Update(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	if err := h.interactor.Update(ctx, r.Seconds, r.MainServerAddress, r.AccessLogPath, r.MysqlServerAddress, r.SlowQueryLogPath); err != nil {
+	if err := h.interactor.UpdateTargets(ctx, toSettingTargetEntities(r.Targets)); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
+type SettingUpdateSlpConfigRequest struct {
+	SlpConfig string `json:"slpConfig" validate:"required"`
+}
+
+func (h *settingHandler) UpdateSlpConfig(c echo.Context) error {
+	r := &SettingUpdateSlpConfigRequest{}
+	if err := c.Bind(r); err != nil {
+		return err
+	}
+	if err := c.Validate(r); err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+	if err := h.interactor.UpdateSlpConfig(ctx, r.SlpConfig); err != nil {
 		return err
 	}
 

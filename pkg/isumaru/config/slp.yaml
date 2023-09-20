@@ -1,0 +1,3 @@
+bundle_values: true
+bundle_where_in: false
+filters: Query matches "^(SELECT|INSERT|UPDATE|REPLACE) "

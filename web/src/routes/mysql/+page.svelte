@@ -1,7 +1,12 @@
 <script lang="ts">
-    import { DataTable, Link } from "carbon-components-svelte";
-    import Launch from "carbon-icons-svelte/lib/Launch.svelte";
     import {onMount} from "svelte";
+    import {
+        Button,
+        DataTable,
+        Link,
+    } from "carbon-components-svelte";
+    import Launch from "carbon-icons-svelte/lib/Launch.svelte";
+    import Play from "carbon-icons-svelte/lib/Play.svelte";
 
     let entries: {
         id: string;
@@ -21,7 +26,18 @@
             console.log(e)
         }
     });
+
+    function collect() {
+        fetch("http://localhost:8000/mysql/collect", {
+            method: "POST",
+        });
+    }
+
 </script>
+
+<div class="justify-flex-end">
+    <Button kind="tertiary" icon={Play} size="small" on:click={collect}>Collect</Button>
+</div>
 
 <DataTable
     sortable
@@ -41,3 +57,11 @@
         {/if}
     </svelte:fragment>
 </DataTable>
+
+<style>
+    .justify-flex-end {
+        display: flex;
+        align-items: center;
+        justify-content: end;
+    }
+</style>

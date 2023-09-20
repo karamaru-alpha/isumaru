@@ -27,7 +27,7 @@ func NewMysqlHandler(interactor usecase.MysqlInteractor) MysqlHandler {
 func (h *mysqlHandler) Collect(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	if err := h.interactor.Collect(ctx, 10, "testdata/slow-query.log"); err != nil {
+	if err := h.interactor.Collect(ctx); err != nil {
 		return nil
 	}
 
