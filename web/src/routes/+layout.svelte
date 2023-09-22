@@ -20,7 +20,7 @@
 <Header platformName="isumaru" href="/">
     <HeaderNav>
         <HeaderNavItem href="/" text="TOP" isSelected={$page.url.pathname == "/"}/>
-        <HeaderNavItem href="/mysql" text="MYSQL" isSelected={$page.url.pathname == "/mysql"}/>
+        <HeaderNavItem href="/mysql" text="MYSQL" isSelected={$page.url.pathname.includes("/mysql")}/>
         <HeaderNavItem href="/setting" text="SETTING" isSelected={$page.url.pathname == "/setting"}/>
     </HeaderNav>
 </Header>

@@ -1,30 +1,29 @@
 package usecase
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"time"
 
 	"golang.org/x/sync/errgroup"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/constant"
+	entity2 "github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/port"
+	repository2 "github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/xcontext"
 )
 
 type MysqlInteractor interface {
 	// Collect 競技サーバーに問い合わせ、スロークエリログをFileに保存する
 	Collect(ctx context.Context) error
 	// GetEntries Fileからスロークエリログの一覧を取得する
-	GetEntries(ctx context.Context) (entity.Entries, error)
+	GetEntries(ctx context.Context) (entity2.Entries, error)
 	// GetSlowQueries Fileからスロークエリログを解析する
 	GetSlowQueries(ctx context.Context, id, targetID string) ([]byte, error)
 	// GetTargetIDs エントリの対象一覧を取得する
@@ -32,15 +31,18 @@ type MysqlInteractor interface {
 }
 
 type mysqlInteractor struct {
-	entryRepository  repository.EntryRepository
-	targetRepository repository.TargetRepository
+	agentPort        port.AgentPort
+	entryRepository  repository2.EntryRepository
+	targetRepository repository2.TargetRepository
 }
 
 func NewMysqlInteractor(
-	entryRepository repository.EntryRepository,
-	targetRepository repository.TargetRepository,
+	agentPort port.AgentPort,
+	entryRepository repository2.EntryRepository,
+	targetRepository repository2.TargetRepository,
 ) MysqlInteractor {
 	return &mysqlInteractor{
+		agentPort,
 		entryRepository,
 		targetRepository,
 	}
@@ -52,61 +54,24 @@ type AgentCollectSlowQueryLogRequest struct {
 }
 
 func (i *mysqlInteractor) Collect(ctx context.Context) error {
-	targets, err := i.targetRepository.SelectByTargetType(ctx, entity.TargetTypeSlowQueryLog)
+	targets, err := i.targetRepository.SelectByTargetType(ctx, entity2.TargetTypeSlowQueryLog)
 	if err != nil {
 		return err
 	}
 
-	now := time.Now()
+	now := xcontext.Value[xcontext.Now, time.Time](ctx)
 	unixTime := now.Unix()
 
 	eg, ctx := errgroup.WithContext(ctx)
 	for _, target := range targets {
 		target := target
 		eg.Go(func() error {
-			// Agentに問い合わせてスロークエリログを取得する
-			requestBody, err := json.Marshal(&AgentCollectSlowQueryLogRequest{
-				Seconds: int32(target.Duration.Seconds()),
-				Path:    target.Path,
-			})
+			// agentに問い合わせてスロークエリログのReaderを取得する
+			reader, err := i.agentPort.CollectSlowQueryLog(ctx, target.URL, target.Path, target.Duration)
 			if err != nil {
 				return err
 			}
-			req, err := http.NewRequestWithContext(
-				ctx,
-				http.MethodPost,
-				fmt.Sprintf("%s/mysql/collect", target.URL),
-				bytes.NewBuffer(requestBody))
-			if err != nil {
-				return err
-			}
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Accept-Encoding", "gzip")
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				return err
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				return errors.New(fmt.Sprintf("fail to collect slow query log. err=%+v", resp.Body))
-			}
-			if resp.ContentLength == 0 {
-				return errors.New("slow query log is empty")
-			}
-
-			var reader io.ReadCloser
-			switch resp.Header.Get("Content-Encoding") {
-			case "gzip":
-				gzipReader, err := gzip.NewReader(resp.Body)
-				if err != nil {
-					return err
-				}
-				defer gzipReader.Close()
-				reader = gzipReader
-			default:
-				reader = resp.Body
-			}
+			defer reader.Close()
 
 			// スロークエリログをファイルに保存する
 			dir := fmt.Sprintf("%s/%d", constant.IsumaruSlowQueryLogDir, unixTime)
@@ -133,7 +98,7 @@ func (i *mysqlInteractor) Collect(ctx context.Context) error {
 	return nil
 }
 
-func (i *mysqlInteractor) GetEntries(ctx context.Context) (entity.Entries, error) {
+func (i *mysqlInteractor) GetEntries(ctx context.Context) (entity2.Entries, error) {
 	entries, err := i.entryRepository.SelectByEntryType(ctx, entity.EntryTypeMysql)
 	if err != nil {
 		return nil, err

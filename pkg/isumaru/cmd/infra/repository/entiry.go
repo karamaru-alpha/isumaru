@@ -9,9 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/constant"
+	entity2 "github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/repository"
 )
 
 type entryRepository struct{}
@@ -20,7 +22,7 @@ func NewEntryRepository() repository.EntryRepository {
 	return &entryRepository{}
 }
 
-func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.EntryType) (entity.Entries, error) {
+func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.EntryType) (entity2.Entries, error) {
 	var dir string
 	switch entryType {
 	case entity.EntryTypeMysql:
@@ -36,7 +38,7 @@ func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.
 	sort.Slice(dirEntries, func(i, j int) bool {
 		return dirEntries[i].Name() > dirEntries[j].Name()
 	})
-	entries := make(entity.Entries, 0, len(dirEntries))
+	entries := make(entity2.Entries, 0, len(dirEntries))
 	for _, dirEntry := range dirEntries {
 		if !dirEntry.IsDir() {
 			continue
@@ -60,7 +62,7 @@ func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.
 			targetIDs = append(targetIDs, targetDirEntry.Name())
 		}
 
-		entries = append(entries, &entity.Entry{
+		entries = append(entries, &entity2.Entry{
 			ID:        unixStr,
 			Type:      entryType,
 			Time:      time.Unix(unix, 0),

@@ -13,3 +13,43 @@ select count(*) from salaries where salary >= 10000;
 # Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
 SET timestamp=1641542056;
 select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';
+# Time: 2022-01-07T07:54:16.358159Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.108477  Lock_time: 0.000733 Rows_sent: 1  Rows_examined: 443308
+SET timestamp=1641542056;
+select count(*) from titles where title LIKE '%r';

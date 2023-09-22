@@ -61,4 +61,5 @@
     sortable
     headers={headers}
     rows={rows}
+    size="short"
 />

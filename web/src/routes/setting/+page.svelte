@@ -83,15 +83,16 @@
 {#each targets as target, index}
     <div class="justify-space-between">
         <Select
-                class="flex-container"
-                inline
-                labelText="Type"
-                selected={target.type.toString()}
-                on:change={(e) => {
-            target.type = Number(e.value)
-        }}>
-            <SelectItem value="1" text="AccessLog" />
-            <SelectItem value="2" text="SlowQueryLog" />
+            class="flex-container"
+            inline
+            labelText="Type"
+            selected={target.type.toString()}
+            on:change={(e) => {
+                target.type = Number(e.value)
+            }
+        }>
+            <SelectItem value="1" text="SlowQueryLog" />
+            <SelectItem value="2" text="AccessLog" />
         </Select>
         <Button kind="danger-tertiary" iconDescription="delete" icon={TrashCan} size="small" on:click={() => {
                 targets = [...targets.slice(0, index), ...targets.slice(index + 1)];
