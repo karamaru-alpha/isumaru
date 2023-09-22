@@ -49,6 +49,7 @@
         { key: "time", value: "Time" },
     ]}
     rows={entries}
+    size="short"
 >
     <svelte:fragment slot="cell" let:cell let:row>
         {#if cell.key === "id"}

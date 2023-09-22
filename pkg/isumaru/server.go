@@ -2,7 +2,6 @@ package isumaru
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -10,10 +9,11 @@ import (
 	"golang.org/x/exp/slog"
 	"golang.org/x/net/http2"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/handler"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/infra/repository"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/handler"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/infra/port"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/infra/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
+	xmiddleware "github.com/karamaru-alpha/isumaru/pkg/isumaru/middleware"
 )
 
 type Config struct {
@@ -29,10 +29,13 @@ func Serve(c *Config) {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
+	e.Use(middleware.Gzip())
+	e.Use(xmiddleware.NewContextMiddleware())
 
+	agentPort := port.NewAgentPort()
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
-	mysqlInteractor := usecase.NewMysqlInteractor(entryRepository, targetRepository)
+	mysqlInteractor := usecase.NewMysqlInteractor(agentPort, entryRepository, targetRepository)
 	settingInteractor := usecase.NewSettingInteractor(targetRepository)
 
 	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
@@ -45,10 +48,6 @@ func Serve(c *Config) {
 	e.GET("/mysql", mysqlHandler.GetEntries)
 	e.GET("/mysql/:id/:targetID", mysqlHandler.GetSlowQueries)
 	e.GET("/mysql/:id", mysqlHandler.GetSlowQueryTargets)
-
-	if err := os.MkdirAll(constant.IsumaruSlowQueryLogDir, os.ModePerm); err != nil {
-		panic(err)
-	}
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)

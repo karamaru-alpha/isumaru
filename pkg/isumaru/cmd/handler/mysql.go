@@ -6,8 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
 )
 
 type MysqlHandler interface {

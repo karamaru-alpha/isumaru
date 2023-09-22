@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/constant"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/repository"
 )
 
 type targetRepository struct{}
