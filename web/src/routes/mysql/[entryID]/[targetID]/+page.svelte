@@ -7,7 +7,6 @@
     import Cube from "carbon-icons-svelte/lib/Cube.svelte";
     import {onMount} from "svelte";
 
-
     const entryID = $page.params.entryID;
     const currentTargetID = $page.params.targetID;
     let targetIDs: string[] = [];
@@ -19,16 +18,10 @@
 
     onMount(async () => {
         try {
-            const res = await fetch(`http://localhost:8000/mysql/${entryID}`)
+            const res = await fetch(`http://localhost:8000/mysql/${entryID}/${currentTargetID}`)
             const json = await res.json();
             targetIDs = json.targetIDs;
-        } catch (e) {
-            console.log(e)
-        }
-
-        try {
-            const res = await fetch(`http://localhost:8000/mysql/${entryID}/${currentTargetID}`)
-            const tsv = await res.text();
+            const tsv = atob(json.data);
             let lines = tsv.split('\n');
             if (tsv.endsWith('\n')) {
                 lines = lines.slice(0, -1);
