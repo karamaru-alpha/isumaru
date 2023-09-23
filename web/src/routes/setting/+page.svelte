@@ -10,6 +10,7 @@
     import Add from "carbon-icons-svelte/lib/Add.svelte";
     import WatsonHealthSubVolume from "carbon-icons-svelte/lib/WatsonHealthSubVolume.svelte";
     import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
+    import {success, error} from "../../lib/toast";
 
     let targets: {
         id: string
@@ -27,12 +28,11 @@
             targets = data.targets
             slpConfig = data.slpConfig
         } catch (e) {
-            console.log(e)
+            error(`Failure: ${e.message}`);
         }
     });
 
-    function addTarget(e) {
-        e.preventDefault();
+    function addTarget() {
         targets = [
             ...targets,
             {
@@ -45,8 +45,7 @@
         ]
     }
 
-    async function saveTarget(e) {
-        e.preventDefault();
+    async function saveTarget() {
         try {
             await fetch("http://localhost:8000/setting/target", {
                 method: "POST",
@@ -57,12 +56,12 @@
                     "Content-Type": "application/json"
                 }
             })
+            success("Succeeded");
         } catch (e) {
-            console.log(e)
+            error(`Failure: ${e.message}`);
         }
     }
     async function saveSlpConfig(e) {
-        e.preventDefault();
         try {
             await fetch("http://localhost:8000/setting/slp", {
                 method: "POST",
@@ -73,8 +72,9 @@
                     "Content-Type": "application/json"
                 }
             })
+            success("Succeeded");
         } catch (e) {
-            console.log(e)
+            error(`Failure: ${e.message}`);
         }
     }
 </script>

@@ -6,7 +6,7 @@
         HeaderNav,
         HeaderNavItem,
     } from "carbon-components-svelte";
-
+    import { SvelteToast } from '@zerodevx/svelte-toast'
 </script>
 
 <svelte:head>
@@ -16,6 +16,7 @@
     />
 </svelte:head>
 
+<SvelteToast />
 
 <Header platformName="isumaru" href="/">
     <HeaderNav>
