@@ -11,6 +11,9 @@ devDependencies:
   '@sveltejs/kit':
     specifier: ^1.20.4
     version: 1.24.1(svelte@4.2.0)(vite@4.4.9)
+  '@zerodevx/svelte-toast':
+    specifier: ^0.9.5
+    version: 0.9.5(svelte@4.2.0)
   carbon-components-svelte:
     specifier: ^0.80.0
     version: 0.80.0
@@ -379,6 +382,14 @@ packages:
 
   /@types/pug@2.0.6:
     resolution: {integrity: sha512-SnHmG9wN1UVmagJOnyo/qkk0Z7gejYxOYYmaAwr5u2yFYfsupN3sg10kyzN8Hep/2zbHxCnsumxOoRIRMBwKCg==}
+    dev: true
+
+  /@zerodevx/svelte-toast@0.9.5(svelte@4.2.0):
+    resolution: {integrity: sha512-JLeB/oRdJfT+dz9A5bgd3Z7TuQnBQbeUtXrGIrNWMGqWbabpepBF2KxtWVhL2qtxpRqhae2f6NAOzH7xs4jUSw==}
+    peerDependencies:
+      svelte: ^3.57.0 || ^4.0.0
+    dependencies:
+      svelte: 4.2.0
     dev: true
 
   /acorn@8.10.0:

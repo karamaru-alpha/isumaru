@@ -12,6 +12,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
+		"@zerodevx/svelte-toast": "^0.9.5",
 		"carbon-components-svelte": "^0.80.0",
 		"carbon-icons-svelte": "^12.3.0",
 		"svelte": "^4.0.5",

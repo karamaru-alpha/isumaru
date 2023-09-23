@@ -10,6 +10,7 @@
     import Play from "carbon-icons-svelte/lib/Play.svelte";
     import Launch from "carbon-icons-svelte/lib/Launch.svelte";
     import Warning from "carbon-icons-svelte/lib/Warning.svelte";
+    import {success, error} from '../lib/toast'
 
 
     enum targetType {
@@ -32,9 +33,13 @@
     }[] = [];
 
     onMount(async () => {
-        const res = await fetch("http://localhost:8000/group")
-        const data = await res.json()
-        entries = data.entries;
+        try {
+            const res = await fetch("http://localhost:8000/group")
+            const data = await res.json()
+            entries = data.entries;
+        } catch (e) {
+            error(`Failure: ${e.message}`);
+        }
     })
 
     async function collect() {
@@ -42,8 +47,9 @@
             await fetch("http://localhost:8000/group/collect", {
                 method: "POST",
             })
+            success("Succeeded");
         } catch (e) {
-            console.log(e)
+            error(`Failure: ${e.message}`);
         }
     }
 </script>
