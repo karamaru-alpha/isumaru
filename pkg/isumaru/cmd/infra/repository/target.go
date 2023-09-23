@@ -2,11 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/constant"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
 
 type targetRepository struct{}
@@ -18,32 +20,24 @@ func NewTargetRepository() repository.TargetRepository {
 var targets = entity.Targets{
 	{
 		ID:       "isu1",
-		Duration: time.Second * 70,
-		Type:     entity.TargetTypeAccessLog,
-		URL:      "http://localhost:19000",
-		Path:     constant.DefaultAccessLogPath,
-	},
-	{
-		ID:       "isu1",
-		Duration: time.Second * 70,
-		Type:     entity.TargetTypeSlowQueryLog,
+		Duration: time.Second * 15,
+		Type:     constant.TargetTypeSlowQueryLog,
 		URL:      "http://localhost:19000",
 		Path:     constant.DefaultSlowQueryLogPath,
 	},
 }
 
-func (r *targetRepository) SelectAll(_ context.Context) (entity.Targets, error) {
-	return targets, nil
-}
-
-func (r *targetRepository) SelectByTargetType(_ context.Context, targetType entity.TargetType) (entity.Targets, error) {
-	ret := make(entity.Targets, 0, len(targets))
+func (r *targetRepository) LoadByPK(_ context.Context, targetID string, targetType constant.TargetType) (*entity.Target, error) {
 	for _, target := range targets {
-		if target.Type == targetType {
-			ret = append(ret, target)
+		if target.ID == targetID && target.Type == targetType {
+			return target, nil
 		}
 	}
-	return ret, nil
+	return nil, errors.New(fmt.Sprintf("target not found. id=%s, type=%d", targetID, targetType))
+}
+
+func (r *targetRepository) SelectAll(_ context.Context) (entity.Targets, error) {
+	return targets, nil
 }
 
 func (r *targetRepository) Update(_ context.Context, new entity.Targets) error {

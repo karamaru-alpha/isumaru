@@ -8,7 +8,7 @@
     import {onMount} from "svelte";
 
 
-    const id = $page.params.id;
+    const entryID = $page.params.entryID;
     const currentTargetID = $page.params.targetID;
     let targetIDs: string[] = [];
     let headers: {
@@ -19,7 +19,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch(`http://localhost:8000/mysql/${id}`)
+            const res = await fetch(`http://localhost:8000/mysql/${entryID}`)
             const json = await res.json();
             targetIDs = json.targetIDs;
         } catch (e) {
@@ -27,13 +27,18 @@
         }
 
         try {
-            const res = await fetch(`http://localhost:8000/mysql/${id}/${currentTargetID}`)
+            const res = await fetch(`http://localhost:8000/mysql/${entryID}/${currentTargetID}`)
             const tsv = await res.text();
             let lines = tsv.split('\n');
             if (tsv.endsWith('\n')) {
                 lines = lines.slice(0, -1);
             }
-            headers = lines[0].split('\t').map((v, i) => ({ key: i.toString(), value: v }));
+            headers = lines[0].split('\t').map((v, i) => {
+                if (i == 1) {
+                    return {key: i.toString(), value: v }
+                }
+                return {key: i.toString(), value: v }
+            });
             rows = lines.slice(1).map((line, index) => {
                 let row: {} = {
                     id: index,
@@ -55,7 +60,7 @@
 <br />
 <br />
 
-<p>Mysql ({new Date(id * 1000).toLocaleString()})</p>
+<p>Mysql ({new Date(entryID * 1000).toLocaleString()})</p>
 
 <DataTable
     sortable

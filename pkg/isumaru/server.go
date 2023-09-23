@@ -13,6 +13,7 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/infra/port"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/infra/repository"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/service"
 	xmiddleware "github.com/karamaru-alpha/isumaru/pkg/isumaru/middleware"
 )
 
@@ -30,24 +31,30 @@ func Serve(c *Config) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.Use(middleware.Gzip())
-	e.Use(xmiddleware.NewContextMiddleware())
+	e.Use(xmiddleware.ContextMiddleware)
 
 	agentPort := port.NewAgentPort()
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
-	mysqlInteractor := usecase.NewMysqlInteractor(agentPort, entryRepository, targetRepository)
+
+	mysqlService := service.NewMysqlService(agentPort, entryRepository, targetRepository)
+	entryService := service.NewEntryService(entryRepository)
+
 	settingInteractor := usecase.NewSettingInteractor(targetRepository)
+	groupInteractor := usecase.NewGroupInteractor(entryService, mysqlService, targetRepository, entryRepository)
+	mysqlInteractor := usecase.NewMysqlInteractor(entryService)
 
-	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
 	settingHandler := handler.NewSettingHandler(settingInteractor)
+	groupHandler := handler.NewGroupHandler(groupInteractor)
+	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
 
+	e.GET("/group", groupHandler.Top)
+	e.POST("/group/collect", groupHandler.Collect)
 	e.GET("/setting", settingHandler.Top)
 	e.POST("/setting/target", settingHandler.UpdateTargets)
 	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
-	e.POST("/mysql/collect", mysqlHandler.Collect)
-	e.GET("/mysql", mysqlHandler.GetEntries)
-	e.GET("/mysql/:id/:targetID", mysqlHandler.GetSlowQueries)
-	e.GET("/mysql/:id", mysqlHandler.GetSlowQueryTargets)
+	e.GET("/mysql/:entryID/:targetID", mysqlHandler.GetSlowQueries)
+	e.GET("/mysql/:entryID", mysqlHandler.GetSlowQueryTargets)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)
