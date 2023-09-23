@@ -20,19 +20,19 @@ func NewAgentPort() port.AgentPort {
 	return &agentPort{}
 }
 
-type AgentCollectSlowQueryLogRequest struct {
+type AgentCollectRequest struct {
 	Seconds int32  `json:"seconds"`
 	Path    string `json:"path"`
 }
 
-func (p *agentPort) CollectSlowQueryLog(_ context.Context, agentURL, slowQueryLogPath string, duration time.Duration) (io.ReadCloser, error) {
+func (p *agentPort) CollectLog(_ context.Context, agentURL, path string, duration time.Duration) (io.ReadCloser, error) {
 	// ブラウザのリロードでcancelされないように別のctxを使用する
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	// リクエスト作成
-	requestBody, err := json.Marshal(&AgentCollectSlowQueryLogRequest{
+	requestBody, err := json.Marshal(&AgentCollectRequest{
 		Seconds: int32(duration.Seconds()),
-		Path:    slowQueryLogPath,
+		Path:    path,
 	})
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (p *agentPort) CollectSlowQueryLog(_ context.Context, agentURL, slowQueryLo
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		fmt.Sprintf("%s/mysql/collect", agentURL),
+		fmt.Sprintf("%s/collect", agentURL),
 		bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
@@ -81,10 +81,10 @@ func (p *agentPort) CollectSlowQueryLog(_ context.Context, agentURL, slowQueryLo
 		}
 	}()
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("fail to collect slow query log. err=%+v", resp.Body))
+		return nil, errors.New(fmt.Sprintf("fail to collect log. err=%+v", resp.Body))
 	}
 	if resp.ContentLength == 0 {
-		return nil, errors.New("slow query log is empty")
+		return nil, errors.New("log is empty")
 	}
 
 	return pr, nil

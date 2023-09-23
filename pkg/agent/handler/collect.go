@@ -8,16 +8,16 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/agent/usecase"
 )
 
-type MysqlHandler interface {
+type CollectHandler interface {
 	Collect(c echo.Context) error
 }
 
-type mysqlHandler struct {
-	interactor usecase.MysqlInteractor
+type collectHandler struct {
+	interactor usecase.CollectInteractor
 }
 
-func NewMysqlHandler(interactor usecase.MysqlInteractor) MysqlHandler {
-	return &mysqlHandler{
+func NewCollectHandler(interactor usecase.CollectInteractor) CollectHandler {
+	return &collectHandler{
 		interactor,
 	}
 }
@@ -27,7 +27,7 @@ type CollectRequest struct {
 	Path    string `json:"path" validate:"required"`
 }
 
-func (h *mysqlHandler) Collect(c echo.Context) error {
+func (h *collectHandler) Collect(c echo.Context) error {
 	r := &CollectRequest{}
 	if err := c.Bind(r); err != nil {
 		return err

@@ -34,7 +34,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch("http://localhost:8000/group")
+            const res = await fetch("http://localhost:8000/collect")
             const data = await res.json()
             entries = data.entries;
         } catch (e) {
@@ -44,7 +44,7 @@
 
     async function collect() {
         try {
-            await fetch("http://localhost:8000/group/collect", {
+            await fetch("http://localhost:8000/collect", {
                 method: "POST",
             })
             success("Succeeded");
@@ -55,7 +55,7 @@
 </script>
 
 <div class="justify-space-between">
-    <TextInput readonly labelText="Webhook URL" value="localhost:8000/group/collect"/>
+    <TextInput readonly labelText="Webhook URL" value="http://localhost:8000/collect"/>
     <Button icon={Play} on:click={collect}>Collect</Button>
 </div>
 

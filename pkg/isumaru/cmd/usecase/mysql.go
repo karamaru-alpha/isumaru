@@ -17,16 +17,16 @@ type MysqlInteractor interface {
 }
 
 type mysqlInteractor struct {
-	entryService service.EntryService
+	collectService service.CollectService
 }
 
-func NewMysqlInteractor(entryService service.EntryService) MysqlInteractor {
-	return &mysqlInteractor{entryService}
+func NewMysqlInteractor(collectService service.CollectService) MysqlInteractor {
+	return &mysqlInteractor{collectService}
 }
 
 func (i *mysqlInteractor) GetSlowQueries(ctx context.Context, entryID, targetID string) ([]byte, error) {
 	path := fmt.Sprintf("%s/%s/%s/%s", constant.IsumaruEntryDir, entryID, constant.IsumaruSlowQueryLogDir, targetID)
-	cmd := exec.CommandContext(ctx, "slp", "--config", constant.SlpConfigPath, "--output", "standard", "--format", "tsv", "--file", path)
+	cmd := exec.CommandContext(ctx, "slp", "--config", constant.SlpConfigPath, "--format", "tsv", "--file", path)
 	data, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (i *mysqlInteractor) GetSlowQueries(ctx context.Context, entryID, targetID 
 }
 
 func (i *mysqlInteractor) GetSucceededTargetIDs(ctx context.Context, entryID string) ([]string, error) {
-	targets, err := i.entryService.GetSucceededTargets(ctx, entryID, constant.TargetTypeSlowQueryLog)
+	targets, err := i.collectService.GetSucceededTargets(ctx, entryID, constant.TargetTypeSlowQueryLog)
 	if err != nil {
 		return nil, err
 	}

@@ -37,19 +37,18 @@ func Serve(c *Config) {
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
 
-	mysqlService := service.NewMysqlService(agentPort, entryRepository, targetRepository)
-	entryService := service.NewEntryService(entryRepository)
+	entryService := service.NewEntryService(agentPort, entryRepository, targetRepository)
 
 	settingInteractor := usecase.NewSettingInteractor(targetRepository)
-	groupInteractor := usecase.NewGroupInteractor(entryService, mysqlService, targetRepository, entryRepository)
+	collectInteractor := usecase.NewCollectInteractor(entryService, targetRepository, entryRepository)
 	mysqlInteractor := usecase.NewMysqlInteractor(entryService)
 
 	settingHandler := handler.NewSettingHandler(settingInteractor)
-	groupHandler := handler.NewGroupHandler(groupInteractor)
+	collectHandler := handler.NewCollectHandler(collectInteractor)
 	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
 
-	e.GET("/group", groupHandler.Top)
-	e.POST("/group/collect", groupHandler.Collect)
+	e.GET("/collect", collectHandler.Top)
+	e.POST("/collect", collectHandler.Collect)
 	e.GET("/setting", settingHandler.Top)
 	e.POST("/setting/target", settingHandler.UpdateTargets)
 	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)

@@ -7,48 +7,44 @@ import (
 
 	"golang.org/x/exp/slog"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/service"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/xcontext"
 )
 
-type GroupInteractor interface {
+type CollectInteractor interface {
 	Top(ctx context.Context) (entity.Entries, error)
 	Collect(ctx context.Context) error
 }
 
-type groupInteractor struct {
-	entryService     service.EntryService
-	mysqlService     service.MysqlService
+type collectInteractor struct {
+	collectService   service.CollectService
 	targetRepository repository.TargetRepository
 	entryRepository  repository.EntryRepository
 }
 
-func NewGroupInteractor(
-	entryService service.EntryService,
-	mysqlService service.MysqlService,
+func NewCollectInteractor(
+	collectService service.CollectService,
 	targetRepository repository.TargetRepository,
 	entryRepository repository.EntryRepository,
-) GroupInteractor {
-	return &groupInteractor{
-		entryService,
-		mysqlService,
+) CollectInteractor {
+	return &collectInteractor{
+		collectService,
 		targetRepository,
 		entryRepository,
 	}
 }
 
-func (i *groupInteractor) Top(ctx context.Context) (entity.Entries, error) {
-	entries, err := i.entryService.GetEntries(ctx)
+func (i *collectInteractor) Top(ctx context.Context) (entity.Entries, error) {
+	entries, err := i.collectService.GetEntries(ctx)
 	if err != nil {
 		return nil, nil
 	}
 	return entries, nil
 }
 
-func (i *groupInteractor) Collect(ctx context.Context) error {
+func (i *collectInteractor) Collect(ctx context.Context) error {
 	// 現在のターゲット一覧を取得する
 	targets, err := i.targetRepository.SelectAll(ctx)
 	if err != nil {
@@ -67,12 +63,10 @@ func (i *groupInteractor) Collect(ctx context.Context) error {
 
 	for _, target := range targets {
 		target := target
+		// goroutineに処理を逃す
 		go func() {
-			switch target.Type {
-			case constant.TargetTypeSlowQueryLog:
-				if err := i.mysqlService.Collect(ctx, entryID, target.ID); err != nil {
-					slog.Error(err.Error())
-				}
+			if err := i.collectService.Collect(ctx, entryID, target.ID, target.Type); err != nil {
+				slog.Error(err.Error())
 			}
 		}()
 	}
