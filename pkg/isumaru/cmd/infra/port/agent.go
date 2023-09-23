@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/port"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/port"
 )
 
 type agentPort struct{}
@@ -25,7 +25,10 @@ type AgentCollectSlowQueryLogRequest struct {
 	Path    string `json:"path"`
 }
 
-func (p *agentPort) CollectSlowQueryLog(ctx context.Context, agentURL, slowQueryLogPath string, duration time.Duration) (io.ReadCloser, error) {
+func (p *agentPort) CollectSlowQueryLog(_ context.Context, agentURL, slowQueryLogPath string, duration time.Duration) (io.ReadCloser, error) {
+	// ブラウザのリロードでcancelされないように別のctxを使用する
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	defer cancel()
 	// リクエスト作成
 	requestBody, err := json.Marshal(&AgentCollectSlowQueryLogRequest{
 		Seconds: int32(duration.Seconds()),

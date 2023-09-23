@@ -3,72 +3,116 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
-	"os"
 	"sort"
-	"strconv"
-	"time"
+	"sync"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
+	"golang.org/x/exp/slog"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/constant"
-	entity2 "github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/repository"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
 
-type entryRepository struct{}
-
-func NewEntryRepository() repository.EntryRepository {
-	return &entryRepository{}
+type entryRepository struct {
+	mu       sync.RWMutex
+	entryMap map[string]*entity.Entry
 }
 
-func (r *entryRepository) SelectByEntryType(_ context.Context, entryType entity.EntryType) (entity2.Entries, error) {
-	var dir string
-	switch entryType {
-	case entity.EntryTypeMysql:
-		dir = constant.IsumaruSlowQueryLogDir
-	default:
-		return nil, errors.New("invalid entry type")
+func NewEntryRepository() repository.EntryRepository {
+	return &entryRepository{
+		entryMap: map[string]*entity.Entry{
+			"1695447044": {
+				ID: "1695447044",
+				Targets: entity.EntryTargets{{
+					Target: &entity.Target{
+						ID:   "isu1",
+						Type: constant.TargetTypeSlowQueryLog,
+					},
+					StatusType: constant.EntryTargetStatusTypeSuccess,
+				}},
+			},
+		},
+	}
+}
+
+func (r *entryRepository) Insert(_ context.Context, entry *entity.Entry) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.entryMap[entry.ID]; ok {
+		return errors.New("entry already exists")
+	}
+	r.entryMap[entry.ID] = entry
+	return nil
+}
+
+func (r *entryRepository) LoadByPK(_ context.Context, entryID string) (*entity.Entry, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	entry, ok := r.entryMap[entryID]
+	if !ok {
+		return nil, errors.New("entry not found")
+	}
+	return entry, nil
+}
+
+func (r *entryRepository) SelectAll(_ context.Context) (entity.Entries, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	ret := make(entity.Entries, 0, len(r.entryMap))
+	for _, entry := range r.entryMap {
+		ret = append(ret, entry)
 	}
 
-	dirEntries, err := os.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	sort.Slice(dirEntries, func(i, j int) bool {
-		return dirEntries[i].Name() > dirEntries[j].Name()
+	sort.Slice(ret, func(i, j int) bool {
+		return ret[i].ID > ret[j].ID
 	})
-	entries := make(entity2.Entries, 0, len(dirEntries))
-	for _, dirEntry := range dirEntries {
-		if !dirEntry.IsDir() {
-			continue
-		}
-		unixStr := dirEntry.Name()
-		unix, err := strconv.ParseInt(unixStr, 10, 64)
-		if err != nil {
-			return nil, err
-		}
+	return ret, nil
+}
 
-		targetDir := fmt.Sprintf("%s/%s", constant.IsumaruSlowQueryLogDir, unixStr)
-		targetsDirEntries, err := os.ReadDir(targetDir)
-		if err != nil {
-			return nil, err
-		}
-		targetIDs := make([]string, 0, len(targetsDirEntries))
-		for _, targetDirEntry := range targetsDirEntries {
-			if targetDirEntry.IsDir() {
-				continue
-			}
-			targetIDs = append(targetIDs, targetDirEntry.Name())
-		}
+func (r *entryRepository) AddTarget(_ context.Context, entryID string, target *entity.EntryTarget) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-		entries = append(entries, &entity2.Entry{
-			ID:        unixStr,
-			Type:      entryType,
-			Time:      time.Unix(unix, 0),
-			TargetIDs: targetIDs,
-		})
+	if _, ok := r.entryMap[entryID]; !ok {
+		return errors.New("entry not found")
 	}
+	r.entryMap[entryID].Targets = append(r.entryMap[entryID].Targets, target)
+	return nil
+}
 
-	return entries, nil
+func (r *entryRepository) UpdateTargetStatusSuccess(_ context.Context, entryID, targetID string, targetType constant.TargetType) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.entryMap[entryID]; !ok {
+		return errors.New("entry not found")
+	}
+	for _, target := range r.entryMap[entryID].Targets {
+		if target.ID == targetID || target.Type == targetType {
+			target.StatusType = constant.EntryTargetStatusTypeSuccess
+			return nil
+		}
+	}
+	return errors.New("target not found")
+}
+
+func (r *entryRepository) UpdateTargetStatusFailure(_ context.Context, entryID, targetID string, targetType constant.TargetType, err error) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.entryMap[entryID]; !ok {
+		return errors.New("entry not found")
+	}
+	for _, target := range r.entryMap[entryID].Targets {
+		if target.ID == targetID || target.Type == targetType {
+			target.StatusType = constant.EntryTargetStatusTypeFailure
+			slog.Error(err.Error())
+			target.Error = err
+			return nil
+		}
+	}
+	return errors.New("target not found")
 }

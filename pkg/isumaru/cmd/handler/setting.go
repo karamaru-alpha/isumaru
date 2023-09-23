@@ -6,8 +6,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
+	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 )
 
 type SettingHandler interface {
@@ -70,7 +71,7 @@ func toSettingTargetEntities(targets []*SettingTarget) entity.Targets {
 	for _, target := range targets {
 		ret = append(ret, &entity.Target{
 			ID:       target.ID,
-			Type:     entity.TargetType(target.Type),
+			Type:     constant.TargetType(target.Type),
 			URL:      target.URL,
 			Path:     target.Path,
 			Duration: time.Second * time.Duration(target.Duration),
