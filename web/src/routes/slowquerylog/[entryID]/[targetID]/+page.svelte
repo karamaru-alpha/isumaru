@@ -18,7 +18,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch(`http://localhost:8000/mysql/${entryID}/${currentTargetID}`)
+            const res = await fetch(`http://localhost:8000/slowquerylog/${entryID}/${currentTargetID}`)
             const json = await res.json();
             targetIDs = json.targetIDs;
             const tsv = atob(json.data);
@@ -48,12 +48,12 @@
 </script>
 
 {#each targetIDs as targetID, index}
-    <Button kind={targetID == currentTargetID ? "primary" : "tertiary"} size="small" icon={Cube} on:click={window.location.href = `/mysql/${id}/${targetID}`}>{targetID}</Button>
+    <Button kind={targetID == currentTargetID ? "primary" : "tertiary"} size="small" icon={Cube} on:click={window.location.href = `/slowquerylog/${entryID}/${targetID}`}>{targetID}</Button>
 {/each}
 <br />
 <br />
 
-<p>Mysql ({new Date(entryID * 1000).toLocaleString()})</p>
+<p>SlowQuery ({new Date(entryID * 1000).toLocaleString()})</p>
 
 <DataTable
     sortable

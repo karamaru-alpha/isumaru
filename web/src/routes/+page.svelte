@@ -75,7 +75,7 @@
     >
         <svelte:fragment slot="cell" let:cell let:row>
             {#if cell.key == "id" && row.statusType == statusType.success}
-                <Link icon={Launch} href="/mysql/{entry.id}/{cell.value}">
+                <Link icon={Launch} href="/slowquerylog/{entry.id}/{cell.value}">
                     {cell.value}
                 </Link>
             {:else if cell.key == "type"}

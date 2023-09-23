@@ -9,17 +9,17 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/service"
 )
 
-type MysqlInteractor interface {
+type SlowQueryLogInteractor interface {
 	// GetSlowQueries Fileからスロークエリログを解析する
 	GetSlowQueries(ctx context.Context, entryID, targetID string) (*SlowQueryInfo, error)
 }
 
-type mysqlInteractor struct {
+type slowQueryLogInteractor struct {
 	collectService service.CollectService
 }
 
-func NewMysqlInteractor(collectService service.CollectService) MysqlInteractor {
-	return &mysqlInteractor{collectService}
+func NewSlowQueryLogInteractor(collectService service.CollectService) SlowQueryLogInteractor {
+	return &slowQueryLogInteractor{collectService}
 }
 
 type SlowQueryInfo struct {
@@ -27,8 +27,9 @@ type SlowQueryInfo struct {
 	TargetIDs []string
 }
 
-func (i *mysqlInteractor) GetSlowQueries(ctx context.Context, entryID, targetID string) (*SlowQueryInfo, error) {
-	path := fmt.Sprintf("%s/%s/%s/%s", constant.IsumaruEntryDir, entryID, constant.IsumaruSlowQueryLogDir, targetID)
+func (i *slowQueryLogInteractor) GetSlowQueries(ctx context.Context, entryID, targetID string) (*SlowQueryInfo, error) {
+	dir := fmt.Sprintf(constant.IsumaruSlowQueryLogDirFormat, entryID)
+	path := fmt.Sprintf("%s/%s", dir, targetID)
 	cmd := exec.CommandContext(ctx, "slp", "--config", constant.SlpConfigPath, "--format", "tsv", "--file", path)
 	data, err := cmd.Output()
 	if err != nil {

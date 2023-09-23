@@ -41,18 +41,18 @@ func Serve(c *Config) {
 
 	settingInteractor := usecase.NewSettingInteractor(targetRepository)
 	collectInteractor := usecase.NewCollectInteractor(entryService, targetRepository, entryRepository)
-	mysqlInteractor := usecase.NewMysqlInteractor(entryService)
+	slowQueryLogInteractor := usecase.NewSlowQueryLogInteractor(entryService)
 
 	settingHandler := handler.NewSettingHandler(settingInteractor)
 	collectHandler := handler.NewCollectHandler(collectInteractor)
-	mysqlHandler := handler.NewMysqlHandler(mysqlInteractor)
+	slowQueryLogHandler := handler.NewSlowQueryLogHandler(slowQueryLogInteractor)
 
 	e.GET("/collect", collectHandler.Top)
 	e.POST("/collect", collectHandler.Collect)
 	e.GET("/setting", settingHandler.Top)
 	e.POST("/setting/target", settingHandler.UpdateTargets)
 	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
-	e.GET("/mysql/:entryID/:targetID", mysqlHandler.GetSlowQueries)
+	e.GET("/slowquerylog/:entryID/:targetID", slowQueryLogHandler.GetSlowQueries)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)

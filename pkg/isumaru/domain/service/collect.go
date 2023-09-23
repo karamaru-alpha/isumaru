@@ -79,7 +79,7 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 	var dir string
 	switch targetType {
 	case constant.TargetTypeSlowQueryLog:
-		dir = fmt.Sprintf("%s/%s/%s", constant.IsumaruEntryDir, entryID, constant.IsumaruSlowQueryLogDir)
+		dir = fmt.Sprintf(constant.IsumaruSlowQueryLogDirFormat, entryID)
 	}
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		panic(err)

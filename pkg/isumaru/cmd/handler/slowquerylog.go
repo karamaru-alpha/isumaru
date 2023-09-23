@@ -8,16 +8,16 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
 )
 
-type MysqlHandler interface {
+type SlowQueryLogHandler interface {
 	GetSlowQueries(c echo.Context) error
 }
 
-type mysqlHandler struct {
-	interactor usecase.MysqlInteractor
+type slowQueryLogHandler struct {
+	interactor usecase.SlowQueryLogInteractor
 }
 
-func NewMysqlHandler(interactor usecase.MysqlInteractor) MysqlHandler {
-	return &mysqlHandler{interactor}
+func NewSlowQueryLogHandler(interactor usecase.SlowQueryLogInteractor) SlowQueryLogHandler {
+	return &slowQueryLogHandler{interactor}
 }
 
 type GetSLowQueriesResponse struct {
@@ -25,7 +25,7 @@ type GetSLowQueriesResponse struct {
 	TargetIDs []string `json:"targetIDs"`
 }
 
-func (h *mysqlHandler) GetSlowQueries(c echo.Context) error {
+func (h *slowQueryLogHandler) GetSlowQueries(c echo.Context) error {
 	entryID := c.Param("entryID")
 	targetID := c.Param("targetID")
 
