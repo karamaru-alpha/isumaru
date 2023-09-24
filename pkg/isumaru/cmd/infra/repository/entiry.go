@@ -6,8 +6,6 @@ import (
 	"sort"
 	"sync"
 
-	"golang.org/x/exp/slog"
-
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
@@ -23,13 +21,36 @@ func NewEntryRepository() repository.EntryRepository {
 		entryMap: map[string]*entity.Entry{
 			"1695447044": {
 				ID: "1695447044",
-				Targets: entity.EntryTargets{{
-					Target: &entity.Target{
-						ID:   "isu1",
-						Type: constant.TargetTypeSlowQueryLog,
+				Targets: entity.EntryTargets{
+					{
+						Target: &entity.Target{
+							ID:   "isu1",
+							Type: constant.TargetTypeSlowQueryLog,
+						},
+						StatusType: constant.EntryTargetStatusTypeSuccess,
 					},
-					StatusType: constant.EntryTargetStatusTypeSuccess,
-				}},
+					{
+						Target: &entity.Target{
+							ID:   "isu2",
+							Type: constant.TargetTypeSlowQueryLog,
+						},
+						StatusType: constant.EntryTargetStatusTypeSuccess,
+					},
+					{
+						Target: &entity.Target{
+							ID:   "isu1",
+							Type: constant.TargetTypeAccessLog,
+						},
+						StatusType: constant.EntryTargetStatusTypeSuccess,
+					},
+					{
+						Target: &entity.Target{
+							ID:   "isu2",
+							Type: constant.TargetTypeAccessLog,
+						},
+						StatusType: constant.EntryTargetStatusTypeSuccess,
+					},
+				},
 			},
 		},
 	}
@@ -91,7 +112,7 @@ func (r *entryRepository) UpdateTargetStatusSuccess(_ context.Context, entryID, 
 		return errors.New("entry not found")
 	}
 	for _, target := range r.entryMap[entryID].Targets {
-		if target.ID == targetID || target.Type == targetType {
+		if target.ID == targetID && target.Type == targetType {
 			target.StatusType = constant.EntryTargetStatusTypeSuccess
 			return nil
 		}
@@ -106,10 +127,10 @@ func (r *entryRepository) UpdateTargetStatusFailure(_ context.Context, entryID, 
 	if _, ok := r.entryMap[entryID]; !ok {
 		return errors.New("entry not found")
 	}
+
 	for _, target := range r.entryMap[entryID].Targets {
-		if target.ID == targetID || target.Type == targetType {
+		if target.ID == targetID && target.Type == targetType {
 			target.StatusType = constant.EntryTargetStatusTypeFailure
-			slog.Error(err.Error())
 			target.Error = err
 			return nil
 		}

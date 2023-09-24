@@ -15,6 +15,7 @@ type SettingHandler interface {
 	Top(c echo.Context) error
 	UpdateTargets(c echo.Context) error
 	UpdateSlpConfig(e echo.Context) error
+	UpdateAlpConfig(e echo.Context) error
 }
 
 type settingHandler struct {
@@ -28,6 +29,7 @@ func NewSettingHandler(interactor usecase.SettingInteractor) SettingHandler {
 type SettingTopResponse struct {
 	Targets   []*SettingTarget `json:"targets"`
 	SlpConfig string           `json:"slpConfig"`
+	AlpConfig string           `json:"alpConfig"`
 }
 
 type SettingTarget struct {
@@ -49,6 +51,7 @@ func (h *settingHandler) Top(c echo.Context) error {
 	return c.JSON(http.StatusOK, &SettingTopResponse{
 		Targets:   toSettingTargets(info.Targets),
 		SlpConfig: info.SlpConfig,
+		AlpConfig: info.AlpConfig,
 	})
 }
 
@@ -116,6 +119,27 @@ func (h *settingHandler) UpdateSlpConfig(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	if err := h.interactor.UpdateSlpConfig(ctx, r.SlpConfig); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
+type SettingUpdateAlpConfigRequest struct {
+	AlpConfig string `json:"alpConfig" validate:"required"`
+}
+
+func (h *settingHandler) UpdateAlpConfig(c echo.Context) error {
+	r := &SettingUpdateAlpConfigRequest{}
+	if err := c.Bind(r); err != nil {
+		return err
+	}
+	if err := c.Validate(r); err != nil {
+		return err
+	}
+
+	ctx := c.Request().Context()
+	if err := h.interactor.UpdateAlpConfig(ctx, r.AlpConfig); err != nil {
 		return err
 	}
 

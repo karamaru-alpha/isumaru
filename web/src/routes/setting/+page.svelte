@@ -20,6 +20,7 @@
         duration: number,
     }[] = [];
     let slpConfig: string;
+    let alpConfig: string;
 
     onMount(async () => {
         try {
@@ -27,6 +28,7 @@
             const data = await res.json()
             targets = data.targets
             slpConfig = data.slpConfig
+            alpConfig = data.alpConfig
         } catch (e) {
             error(`Failure: ${e.message}`);
         }
@@ -61,12 +63,30 @@
             error(`Failure: ${e.message}`);
         }
     }
-    async function saveSlpConfig(e) {
+
+    async function saveSlpConfig() {
         try {
             await fetch("http://localhost:8000/setting/slp", {
                 method: "POST",
                 body: JSON.stringify({
                     slpConfig,
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            success("Succeeded");
+        } catch (e) {
+            error(`Failure: ${e.message}`);
+        }
+    }
+
+    async function saveAlpConfig() {
+        try {
+            await fetch("http://localhost:8000/setting/alp", {
+                method: "POST",
+                body: JSON.stringify({
+                    alpConfig,
                 }),
                 headers: {
                     "Content-Type": "application/json"
@@ -144,6 +164,17 @@
 <br />
 <div class="justify-flex-end">
     <Button kind="tertiary" icon={WatsonHealthSubVolume} size="small" on:click={saveSlpConfig}>Save</Button>
+</div>
+
+<p style="margin-top: 10px">Alp Config</p>
+<TextArea
+    rows={8}
+    bind:value={alpConfig}
+    label="Alp Config"
+/>
+<br />
+<div class="justify-flex-end">
+    <Button kind="tertiary" icon={WatsonHealthSubVolume} size="small" on:click={saveAlpConfig}>Save</Button>
 </div>
 
 <style>

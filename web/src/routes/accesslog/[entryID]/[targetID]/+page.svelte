@@ -7,7 +7,6 @@
     import Cube from "carbon-icons-svelte/lib/Cube.svelte";
     import {onMount} from "svelte";
 
-
     const entryID = $page.params.entryID;
     const currentTargetID = $page.params.targetID;
     let targetIDs: string[] = [];
@@ -19,16 +18,10 @@
 
     onMount(async () => {
         try {
-            const res = await fetch(`http://localhost:8000/mysql/${entryID}`)
+            const res = await fetch(`http://localhost:8000/accesslog/${entryID}/${currentTargetID}`)
             const json = await res.json();
             targetIDs = json.targetIDs;
-        } catch (e) {
-            console.log(e)
-        }
-
-        try {
-            const res = await fetch(`http://localhost:8000/mysql/${entryID}/${currentTargetID}`)
-            const tsv = await res.text();
+            const tsv = atob(json.data);
             let lines = tsv.split('\n');
             if (tsv.endsWith('\n')) {
                 lines = lines.slice(0, -1);
@@ -55,16 +48,16 @@
 </script>
 
 {#each targetIDs as targetID, index}
-    <Button kind={targetID == currentTargetID ? "primary" : "tertiary"} size="small" icon={Cube} on:click={window.location.href = `/mysql/${id}/${targetID}`}>{targetID}</Button>
+    <Button kind={targetID == currentTargetID ? "primary" : "tertiary"} size="small" icon={Cube} on:click={window.location.href = `/accesslog/${entryID}/${targetID}`}>{targetID}</Button>
 {/each}
 <br />
 <br />
 
-<p>Mysql ({new Date(entryID * 1000).toLocaleString()})</p>
+<p>AccessLog ({new Date(entryID * 1000).toLocaleString()})</p>
 
 <DataTable
-    sortable
-    headers={headers}
-    rows={rows}
-    size="short"
+        sortable
+        headers={headers}
+        rows={rows}
+        size="short"
 />

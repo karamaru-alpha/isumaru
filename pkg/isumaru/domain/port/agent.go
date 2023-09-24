@@ -7,5 +7,5 @@ import (
 )
 
 type AgentPort interface {
-	CollectSlowQueryLog(ctx context.Context, agentURL, slowQueryLogPath string, duration time.Duration) (io.ReadCloser, error)
+	CollectLog(ctx context.Context, agentURL, path string, duration time.Duration) (io.ReadCloser, error)
 }

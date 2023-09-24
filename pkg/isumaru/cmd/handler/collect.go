@@ -10,22 +10,22 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 )
 
-type GroupHandler interface {
+type CollectHandler interface {
 	Top(c echo.Context) error
 	Collect(c echo.Context) error
 }
 
-type groupHandler struct {
-	groupInteractor usecase.GroupInteractor
+type collectHandler struct {
+	collectInteractor usecase.CollectInteractor
 }
 
-func NewGroupHandler(groupInteractor usecase.GroupInteractor) GroupHandler {
-	return &groupHandler{groupInteractor}
+func NewCollectHandler(collectInteractor usecase.CollectInteractor) CollectHandler {
+	return &collectHandler{collectInteractor}
 }
 
-func (h *groupHandler) Top(c echo.Context) error {
+func (h *collectHandler) Top(c echo.Context) error {
 	ctx := c.Request().Context()
-	res, err := h.groupInteractor.Top(ctx)
+	res, err := h.collectInteractor.Top(ctx)
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func (h *groupHandler) Top(c echo.Context) error {
 	})
 }
 
-func (h *groupHandler) Collect(c echo.Context) error {
+func (h *collectHandler) Collect(c echo.Context) error {
 	ctx := c.Request().Context()
-	if err := h.groupInteractor.Collect(ctx); err != nil {
+	if err := h.collectInteractor.Collect(ctx); err != nil {
 		return err
 	}
 

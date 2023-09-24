@@ -1,10 +1,11 @@
 package constant
 
 const (
-	DefaultAccessLogPath    = "/var/log/nginx/access.log"
+	DefaultAccessLogPath    = "testdata/access.log"
 	DefaultSlowQueryLogPath = "testdata/slow-query.log"
 
-	IsumaruEntryDir        = "log"
-	IsumaruSlowQueryLogDir = "mysql"
-	SlpConfigPath          = "config/slp.yaml"
+	IsumaruSlowQueryLogDirFormat = "log/%s/slowquerylog"
+	IsumaruAccessLogDirFormat    = "log/%s/accesslog"
+	SlpConfigPath                = "config/slp.yaml"
+	AlpConfigPath                = "config/alp.yaml"
 )

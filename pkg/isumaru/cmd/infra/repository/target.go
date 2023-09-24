@@ -25,6 +25,13 @@ var targets = entity.Targets{
 		URL:      "http://localhost:19000",
 		Path:     constant.DefaultSlowQueryLogPath,
 	},
+	{
+		ID:       "isu1",
+		Duration: time.Second * 15,
+		Type:     constant.TargetTypeAccessLog,
+		URL:      "http://localhost:19000",
+		Path:     constant.DefaultAccessLogPath,
+	},
 }
 
 func (r *targetRepository) LoadByPK(_ context.Context, targetID string, targetType constant.TargetType) (*entity.Target, error) {
