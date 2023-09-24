@@ -24,17 +24,23 @@ type CollectService interface {
 }
 
 type collectService struct {
-	agentPort        port.AgentPort
-	entryRepository  repository.EntryRepository
-	targetRepository repository.TargetRepository
+	accessLogDirFormat    string
+	slowQueryLogDirFormat string
+	agentPort             port.AgentPort
+	entryRepository       repository.EntryRepository
+	targetRepository      repository.TargetRepository
 }
 
 func NewCollectService(
+	accessLogDirFormat string,
+	slowQueryLogDirFormat string,
 	agentPort port.AgentPort,
 	entryRepository repository.EntryRepository,
 	targetRepository repository.TargetRepository,
 ) CollectService {
 	return &collectService{
+		accessLogDirFormat,
+		slowQueryLogDirFormat,
 		agentPort,
 		entryRepository,
 		targetRepository,
@@ -79,12 +85,12 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 	var dir string
 	switch targetType {
 	case constant.TargetTypeSlowQueryLog:
-		dir = fmt.Sprintf(constant.IsumaruSlowQueryLogDirFormat, entryID)
+		dir = fmt.Sprintf(s.slowQueryLogDirFormat, entryID)
 	case constant.TargetTypeAccessLog:
-		dir = fmt.Sprintf(constant.IsumaruAccessLogDirFormat, entryID)
+		dir = fmt.Sprintf(s.accessLogDirFormat, entryID)
 	}
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		panic(err)
+		return err
 	}
 	path := fmt.Sprintf("%s/%s", dir, target.ID)
 	file, err := os.Create(path)

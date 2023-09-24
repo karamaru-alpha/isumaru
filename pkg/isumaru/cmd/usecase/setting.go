@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 
-	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
@@ -22,11 +21,19 @@ type SettingInteractor interface {
 }
 
 type settingInteractor struct {
+	alpConfigPath    string
+	slpConfigPath    string
 	targetRepository repository.TargetRepository
 }
 
-func NewSettingInteractor(targetRepository repository.TargetRepository) SettingInteractor {
+func NewSettingInteractor(
+	alpConfigPath string,
+	slpConfigPath string,
+	targetRepository repository.TargetRepository,
+) SettingInteractor {
 	return &settingInteractor{
+		alpConfigPath,
+		slpConfigPath,
 		targetRepository,
 	}
 }
@@ -43,7 +50,7 @@ func (i *settingInteractor) Top(ctx context.Context) (*SettingTopInfo, error) {
 		return nil, err
 	}
 
-	slpConfigFile, err := os.Open(constant.SlpConfigPath)
+	slpConfigFile, err := os.Open(i.slpConfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +60,7 @@ func (i *settingInteractor) Top(ctx context.Context) (*SettingTopInfo, error) {
 		return nil, err
 	}
 
-	alpConfigFile, err := os.Open(constant.AlpConfigPath)
+	alpConfigFile, err := os.Open(i.alpConfigPath)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +86,7 @@ func (i *settingInteractor) UpdateTargets(ctx context.Context, targets entity.Ta
 }
 
 func (i *settingInteractor) UpdateSlpConfig(_ context.Context, config string) error {
-	file, err := os.Create(constant.SlpConfigPath)
+	file, err := os.Create(i.slpConfigPath)
 	if err != nil {
 		return err
 	}
@@ -92,7 +99,7 @@ func (i *settingInteractor) UpdateSlpConfig(_ context.Context, config string) er
 }
 
 func (i *settingInteractor) UpdateAlpConfig(_ context.Context, config string) error {
-	file, err := os.Create(constant.AlpConfigPath)
+	file, err := os.Create(i.alpConfigPath)
 	if err != nil {
 		return err
 	}

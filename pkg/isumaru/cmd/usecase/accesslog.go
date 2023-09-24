@@ -15,11 +15,21 @@ type AccessLogInteractor interface {
 }
 
 type accessLogInteractor struct {
-	collectService service.CollectService
+	accessLogDirFormat string
+	alpConfigPath      string
+	collectService     service.CollectService
 }
 
-func NewAccessLogInteractor(collectService service.CollectService) AccessLogInteractor {
-	return &accessLogInteractor{collectService}
+func NewAccessLogInteractor(
+	accessLogDirFormat string,
+	alpConfigPath string,
+	collectService service.CollectService,
+) AccessLogInteractor {
+	return &accessLogInteractor{
+		accessLogDirFormat,
+		alpConfigPath,
+		collectService,
+	}
 }
 
 type SlowAccessInfo struct {
@@ -28,9 +38,10 @@ type SlowAccessInfo struct {
 }
 
 func (i *accessLogInteractor) GetSlowRequests(ctx context.Context, entryID, targetID string) (*SlowAccessInfo, error) {
-	dir := fmt.Sprintf(constant.IsumaruAccessLogDirFormat, entryID)
+	dir := fmt.Sprintf(i.accessLogDirFormat, entryID)
 	path := fmt.Sprintf("%s/%s", dir, targetID)
-	cmd := exec.Command("alp", "ltsv", "--config", constant.AlpConfigPath, "--format", "tsv", "--file", path)
+
+	cmd := exec.Command("alp", "ltsv", "--config", i.alpConfigPath, "--format", "tsv", "--file", path)
 	data, err := cmd.Output()
 	if err != nil {
 		return nil, err

@@ -4,38 +4,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
+	"sync"
 
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/constant"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/entity"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/repository"
 )
 
-type targetRepository struct{}
+type targetRepository struct {
+	mu      sync.RWMutex
+	targets entity.Targets
+}
 
 func NewTargetRepository() repository.TargetRepository {
 	return &targetRepository{}
 }
 
-var targets = entity.Targets{
-	{
-		ID:       "isu1",
-		Duration: time.Second * 15,
-		Type:     constant.TargetTypeSlowQueryLog,
-		URL:      "http://localhost:19000",
-		Path:     constant.DefaultSlowQueryLogPath,
-	},
-	{
-		ID:       "isu1",
-		Duration: time.Second * 15,
-		Type:     constant.TargetTypeAccessLog,
-		URL:      "http://localhost:19000",
-		Path:     constant.DefaultAccessLogPath,
-	},
-}
-
 func (r *targetRepository) LoadByPK(_ context.Context, targetID string, targetType constant.TargetType) (*entity.Target, error) {
-	for _, target := range targets {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, target := range r.targets {
 		if target.ID == targetID && target.Type == targetType {
 			return target, nil
 		}
@@ -44,10 +33,16 @@ func (r *targetRepository) LoadByPK(_ context.Context, targetID string, targetTy
 }
 
 func (r *targetRepository) SelectAll(_ context.Context) (entity.Targets, error) {
-	return targets, nil
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.targets, nil
 }
 
 func (r *targetRepository) Update(_ context.Context, new entity.Targets) error {
-	targets = new
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.targets = new
 	return nil
 }

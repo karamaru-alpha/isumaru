@@ -12,9 +12,13 @@
     import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
     import {success, error} from "../../lib/toast";
 
+    enum targetType {
+        slowQueryLog = 1,
+        accessLog = 2,
+    }
     let targets: {
         id: string
-        type: number,
+        type: targetType,
         url: string,
         path: string,
         duration: number,
@@ -39,8 +43,8 @@
             ...targets,
             {
                 id: "isu1",
-                type: 1,
-                url: "http://localhost:8080",
+                type: targetType.accessLog,
+                url: "http://localhost:19000",
                 path: "/var/log/nginx/access.log",
                 duration: 70,
             }
@@ -103,16 +107,14 @@
 {#each targets as target, index}
     <div class="justify-space-between">
         <Select
-            class="flex-container"
             inline
-            labelText="Type"
-            selected={target.type.toString()}
+            selected={target.type}
             on:change={(e) => {
-                target.type = Number(e.value)
-            }
-        }>
-            <SelectItem value="1" text="SlowQueryLog" />
-            <SelectItem value="2" text="AccessLog" />
+                target.type = Number(e.target.value)
+            }}
+        >
+            <SelectItem value={targetType.slowQueryLog} text="SlowQueryLog" />
+            <SelectItem value={targetType.accessLog} text="AccessLog" />
         </Select>
         <Button kind="danger-tertiary" iconDescription="delete" icon={TrashCan} size="small" on:click={() => {
                 targets = [...targets.slice(0, index), ...targets.slice(index + 1)];

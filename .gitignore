@@ -1,2 +1,1 @@
-pkg/isumaru/log/*
-!pkg/isumaru/log/1695447044
+**/log/**
