@@ -37,22 +37,26 @@ func Serve(c *Config) {
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
 
-	entryService := service.NewEntryService(agentPort, entryRepository, targetRepository)
+	collectService := service.NewCollectService(agentPort, entryRepository, targetRepository)
 
 	settingInteractor := usecase.NewSettingInteractor(targetRepository)
-	collectInteractor := usecase.NewCollectInteractor(entryService, targetRepository, entryRepository)
-	slowQueryLogInteractor := usecase.NewSlowQueryLogInteractor(entryService)
+	collectInteractor := usecase.NewCollectInteractor(collectService, targetRepository, entryRepository)
+	slowQueryLogInteractor := usecase.NewSlowQueryLogInteractor(collectService)
+	accessLogInteractor := usecase.NewAccessLogInteractor(collectService)
 
 	settingHandler := handler.NewSettingHandler(settingInteractor)
 	collectHandler := handler.NewCollectHandler(collectInteractor)
 	slowQueryLogHandler := handler.NewSlowQueryLogHandler(slowQueryLogInteractor)
+	accessLogHandler := handler.NewAccessLogHandler(accessLogInteractor)
 
 	e.GET("/collect", collectHandler.Top)
 	e.POST("/collect", collectHandler.Collect)
 	e.GET("/setting", settingHandler.Top)
 	e.POST("/setting/target", settingHandler.UpdateTargets)
 	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
+	e.POST("/setting/alp", settingHandler.UpdateAlpConfig)
 	e.GET("/slowquerylog/:entryID/:targetID", slowQueryLogHandler.GetSlowQueries)
+	e.GET("/accesslog/:entryID/:targetID", accessLogHandler.GetSlowRequests)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)

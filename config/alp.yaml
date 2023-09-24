@@ -1,0 +1,6 @@
+output: method,uri,count,sum,avg,min,max,2xx,4xx,5xx
+sort: sum
+reverse: true
+matching_groups:
+  - ^/api/mock/.+[0-9]$
+  - ^/api/mock/.+[a-z]$

@@ -13,14 +13,14 @@ type SlowQueryLogHandler interface {
 }
 
 type slowQueryLogHandler struct {
-	interactor usecase.SlowQueryLogInteractor
+	slowQueryLogInteractor usecase.SlowQueryLogInteractor
 }
 
-func NewSlowQueryLogHandler(interactor usecase.SlowQueryLogInteractor) SlowQueryLogHandler {
-	return &slowQueryLogHandler{interactor}
+func NewSlowQueryLogHandler(slowQueryLogInteractor usecase.SlowQueryLogInteractor) SlowQueryLogHandler {
+	return &slowQueryLogHandler{slowQueryLogInteractor}
 }
 
-type GetSLowQueriesResponse struct {
+type GetSlowQueriesResponse struct {
 	Data      []byte   `json:"data"`
 	TargetIDs []string `json:"targetIDs"`
 }
@@ -30,12 +30,12 @@ func (h *slowQueryLogHandler) GetSlowQueries(c echo.Context) error {
 	targetID := c.Param("targetID")
 
 	ctx := c.Request().Context()
-	res, err := h.interactor.GetSlowQueries(ctx, entryID, targetID)
+	res, err := h.slowQueryLogInteractor.GetSlowQueries(ctx, entryID, targetID)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, &GetSLowQueriesResponse{
+	return c.JSON(http.StatusOK, &GetSlowQueriesResponse{
 		Data:      res.Data,
 		TargetIDs: res.TargetIDs,
 	})

@@ -29,7 +29,7 @@ type collectService struct {
 	targetRepository repository.TargetRepository
 }
 
-func NewEntryService(
+func NewCollectService(
 	agentPort port.AgentPort,
 	entryRepository repository.EntryRepository,
 	targetRepository repository.TargetRepository,
@@ -80,6 +80,8 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 	switch targetType {
 	case constant.TargetTypeSlowQueryLog:
 		dir = fmt.Sprintf(constant.IsumaruSlowQueryLogDirFormat, entryID)
+	case constant.TargetTypeAccessLog:
+		dir = fmt.Sprintf(constant.IsumaruAccessLogDirFormat, entryID)
 	}
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		panic(err)

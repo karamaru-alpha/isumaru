@@ -1,0 +1,10 @@
+# Time: 2022-01-07T07:54:07.943312Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.410568  Lock_time: 0.000513 Rows_sent: 1  Rows_examined: 2844047
+SET timestamp=1641542047;
+select count(*) from salaries where salary >= 10000;
+# Time: 2022-01-07T07:54:07.943312Z
+# User@Host: root[root] @ localhost []  Id:    10
+# Query_time: 0.410568  Lock_time: 0.000513 Rows_sent: 1  Rows_examined: 2844047
+SET timestamp=1641542047;
+select count(*) from salaries where salary >= 10000;

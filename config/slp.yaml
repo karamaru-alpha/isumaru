@@ -1,3 +1,5 @@
+sort: sum-query-time
+reverse: true
 bundle_values: true
 bundle_where_in: true
 filters: Query matches "^(SELECT|INSERT|UPDATE|REPLACE) "

@@ -15,6 +15,7 @@
 
     enum targetType {
         slowQueryLog = 1,
+        accessLog = 2,
     }
     enum statusType {
         progress = 1,
@@ -25,7 +26,8 @@
     let entries: {
         id: string;
         targets: {
-            id: string;
+            id: number;
+            label: string;
             type: targetType;
             statusType: statusType;
             errorMessage: string;
@@ -36,7 +38,19 @@
         try {
             const res = await fetch("http://localhost:8000/collect")
             const data = await res.json()
-            entries = data.entries;
+            console.log(data)
+            entries = data.entries.map((e) => {
+                e.targets = e.targets.map((e, i) => {
+                    return {
+                        id: i,
+                        label: e.id,
+                        type: e.type,
+                        statusType: e.statusType,
+                        errorMessage: e.errorMessage,
+                    }
+                })
+                return e
+            });
         } catch (e) {
             error(`Failure: ${e.message}`);
         }
@@ -66,7 +80,7 @@
     <p>{new Date(entry.id * 1000).toLocaleString()}</p>
     <DataTable
         headers={[
-            { key: "id", value: "ID", width: "33%" },
+            { key: "label", value: "ID", width: "33%" },
             { key: "type", value: "Type", width: "33%" },
             { key: "statusType", value: "Status", width: "33%" },
         ]}
@@ -74,10 +88,16 @@
         size="short"
     >
         <svelte:fragment slot="cell" let:cell let:row>
-            {#if cell.key == "id" && row.statusType == statusType.success}
-                <Link icon={Launch} href="/slowquerylog/{entry.id}/{cell.value}">
-                    {cell.value}
-                </Link>
+            {#if cell.key == "label" && row.statusType == statusType.success}
+                {#if row.type == targetType.slowQueryLog}
+                    <Link icon={Launch} href="/slowquerylog/{entry.id}/{cell.value}">
+                        {cell.value}
+                    </Link>
+                {:else if row.type == targetType.accessLog}
+                    <Link icon={Launch} href="/accesslog/{entry.id}/{cell.value}">
+                        {cell.value}
+                    </Link>
+                {/if}
             {:else if cell.key == "type"}
                 {targetType[cell.value]}
             {:else if cell.key == "statusType"}
