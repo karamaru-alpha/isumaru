@@ -15,11 +15,21 @@ type SlowQueryLogInteractor interface {
 }
 
 type slowQueryLogInteractor struct {
-	collectService service.CollectService
+	slpConfigPath         string
+	slowQueryLogDirFormat string
+	collectService        service.CollectService
 }
 
-func NewSlowQueryLogInteractor(collectService service.CollectService) SlowQueryLogInteractor {
-	return &slowQueryLogInteractor{collectService}
+func NewSlowQueryLogInteractor(
+	slpConfigPath string,
+	slowQueryLogDirFormat string,
+	collectService service.CollectService,
+) SlowQueryLogInteractor {
+	return &slowQueryLogInteractor{
+		slpConfigPath,
+		slowQueryLogDirFormat,
+		collectService,
+	}
 }
 
 type SlowQueryInfo struct {
@@ -28,9 +38,9 @@ type SlowQueryInfo struct {
 }
 
 func (i *slowQueryLogInteractor) GetSlowQueries(ctx context.Context, entryID, targetID string) (*SlowQueryInfo, error) {
-	dir := fmt.Sprintf(constant.IsumaruSlowQueryLogDirFormat, entryID)
+	dir := fmt.Sprintf(i.slowQueryLogDirFormat, entryID)
 	path := fmt.Sprintf("%s/%s", dir, targetID)
-	cmd := exec.CommandContext(ctx, "slp", "--config", constant.SlpConfigPath, "--format", "tsv", "--file", path)
+	cmd := exec.CommandContext(ctx, "slp", "--config", i.slpConfigPath, "--format", "tsv", "--file", path)
 	data, err := cmd.Output()
 	if err != nil {
 		return nil, err
