@@ -5,7 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/karamaru-alpha/isumaru/pkg/agent/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/agent/cmd/usecase"
 )
 
 type CollectHandler interface {

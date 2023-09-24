@@ -9,8 +9,8 @@ import (
 	"golang.org/x/exp/slog"
 	"golang.org/x/net/http2"
 
-	"github.com/karamaru-alpha/isumaru/pkg/agent/handler"
-	"github.com/karamaru-alpha/isumaru/pkg/agent/usecase"
+	"github.com/karamaru-alpha/isumaru/pkg/agent/cmd/handler"
+	"github.com/karamaru-alpha/isumaru/pkg/agent/cmd/usecase"
 )
 
 type Config struct {

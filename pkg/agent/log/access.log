@@ -10,5 +10,3 @@ time:2015-09-06T06:00:42+09:00	method:GET	uri:/foo/bar?token=zzz	status:200	size
 time:2015-09-06T06:00:43+09:00	method:GET	uri:/foo/bar	status:400	size:15	apptime:-
 time:2015-09-06T06:00:43+09:00	method:GET	uri:/diary/entry/1234	status:200	size:15	apptime:0.135
 time:2015-09-06T06:00:43+09:00	method:GET	uri:/diary/entry/5678	status:200	size:30	apptime:0.432
-time:2015-09-06T06:00:43+09:00	method:GET	uri:/diary/entry/5678	status:200	size:30	apptime:0.432
-time:2015-09-06T06:00:43+09:00	method:GET	uri:/diary/entry/5678	status:200	size:30	apptime:0.432
