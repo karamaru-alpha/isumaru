@@ -12,7 +12,7 @@
 ```sh
 $ make run-web
 $ make run-agent
-$ make run
+$ make run-api
 ```
 
 #### Show AccessLog

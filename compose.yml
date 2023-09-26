@@ -1,0 +1,16 @@
+version: "3"
+services:
+  isumaru:
+    build:
+      context: .
+      dockerfile: ./build/api/Dockerfile
+    tty: true
+    environment:
+      - PORT=8000
+      - SLOW_QUERY_LOG_DIR_FORMAT=pkg/isumaru/log/%s/slowquerylog
+      - ACCESS_LOG_DIR_FORMAT=pkg/isumaru/log/%s/accesslog
+      - SLP_CONFIG_PATH=config/slp.yaml
+      - ALP_CONFIG_PATH=config/alp.yamld
+      - AGENT_URL=http://localhost:19000
+    ports:
+      - "8000:8000"

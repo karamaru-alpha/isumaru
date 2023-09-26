@@ -28,7 +28,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch("http://localhost:8000/setting")
+            const res = await fetch("/api/setting")
             const data = await res.json()
             targets = data.targets
             slpConfig = data.slpConfig
@@ -53,7 +53,7 @@
 
     async function saveTarget() {
         try {
-            await fetch("http://localhost:8000/setting/target", {
+            await fetch("/api/setting/target", {
                 method: "POST",
                 body: JSON.stringify({
                     targets,
@@ -70,7 +70,7 @@
 
     async function saveSlpConfig() {
         try {
-            await fetch("http://localhost:8000/setting/slp", {
+            await fetch("/api/api/setting/slp", {
                 method: "POST",
                 body: JSON.stringify({
                     slpConfig,
@@ -87,7 +87,7 @@
 
     async function saveAlpConfig() {
         try {
-            await fetch("http://localhost:8000/setting/alp", {
+            await fetch("/api/api/setting/alp", {
                 method: "POST",
                 body: JSON.stringify({
                     alpConfig,
