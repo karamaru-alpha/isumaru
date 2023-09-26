@@ -36,9 +36,8 @@
 
     onMount(async () => {
         try {
-            const res = await fetch("http://localhost:8000/collect")
+            const res = await fetch("/api/collect")
             const data = await res.json()
-            console.log(data)
             entries = data.entries.map((e) => {
                 e.targets = e.targets.map((e, i) => {
                     return {
@@ -58,7 +57,7 @@
 
     async function collect() {
         try {
-            await fetch("http://localhost:8000/collect", {
+            await fetch("/api/collect", {
                 method: "POST",
             })
             success("Succeeded");
@@ -69,7 +68,7 @@
 </script>
 
 <div class="justify-space-between">
-    <TextInput readonly labelText="Webhook URL" value="http://localhost:8000/collect"/>
+    <TextInput readonly labelText="Webhook URL" value="http://localhost:8000/api/collect"/>
     <Button icon={Play} on:click={collect}>Collect</Button>
 </div>
 

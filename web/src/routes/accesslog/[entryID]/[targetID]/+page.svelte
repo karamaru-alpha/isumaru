@@ -18,7 +18,7 @@
 
     onMount(async () => {
         try {
-            const res = await fetch(`http://localhost:8000/accesslog/${entryID}/${currentTargetID}`)
+            const res = await fetch(`/api/accesslog/${entryID}/${currentTargetID}`)
             const json = await res.json();
             targetIDs = json.targetIDs;
             const tsv = atob(json.data);

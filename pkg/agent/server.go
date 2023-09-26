@@ -29,7 +29,9 @@ func Serve(c *Config) {
 
 	collectInteractor := usecase.NewCollectInteractor()
 	collectHandler := handler.NewCollectHandler(collectInteractor)
-	e.POST("/collect", collectHandler.Collect)
+
+	debug := e.Group("/debug")
+	debug.POST("/collect", collectHandler.Collect)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)

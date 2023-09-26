@@ -15,6 +15,8 @@ import (
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/cmd/usecase"
 	"github.com/karamaru-alpha/isumaru/pkg/isumaru/domain/service"
 	xmiddleware "github.com/karamaru-alpha/isumaru/pkg/isumaru/middleware"
+
+	"github.com/karamaru-alpha/isumaru/web"
 )
 
 type Config struct {
@@ -37,6 +39,11 @@ func Serve(c *Config) {
 	e.Use(middleware.Gzip())
 	e.Use(xmiddleware.ContextMiddleware)
 
+	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+		Filesystem: web.BuildHTTPFS(),
+		HTML5:      true,
+	}))
+
 	agentPort := port.NewAgentPort()
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
@@ -53,14 +60,15 @@ func Serve(c *Config) {
 	slowQueryLogHandler := handler.NewSlowQueryLogHandler(slowQueryLogInteractor)
 	accessLogHandler := handler.NewAccessLogHandler(accessLogInteractor)
 
-	e.GET("/collect", collectHandler.Top)
-	e.POST("/collect", collectHandler.Collect)
-	e.GET("/setting", settingHandler.Top)
-	e.POST("/setting/target", settingHandler.UpdateTargets)
-	e.POST("/setting/slp", settingHandler.UpdateSlpConfig)
-	e.POST("/setting/alp", settingHandler.UpdateAlpConfig)
-	e.GET("/slowquerylog/:entryID/:targetID", slowQueryLogHandler.GetSlowQueries)
-	e.GET("/accesslog/:entryID/:targetID", accessLogHandler.GetSlowRequests)
+	api := e.Group("/api")
+	api.GET("/collect", collectHandler.Top)
+	api.POST("/collect", collectHandler.Collect)
+	api.GET("/setting", settingHandler.Top)
+	api.POST("/setting/target", settingHandler.UpdateTargets)
+	api.POST("/setting/slp", settingHandler.UpdateSlpConfig)
+	api.POST("/setting/alp", settingHandler.UpdateAlpConfig)
+	api.GET("/slowquerylog/:entryID/:targetID", slowQueryLogHandler.GetSlowQueries)
+	api.GET("/accesslog/:entryID/:targetID", accessLogHandler.GetSlowRequests)
 
 	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
 		slog.Error("failed to start web-agent server. err=%+v", err)
