@@ -26,14 +26,17 @@ type TargetType int32
 const (
 	TargetTypeSlowQueryLog TargetType = iota + 1
 	TargetTypeAccessLog
+	TargetTypePProf
 )
 
 func (t TargetType) String() string {
 	switch t {
 	case TargetTypeSlowQueryLog:
-		return "SlowQueryLog"
+		return "TargetTypeSlowQueryLog"
 	case TargetTypeAccessLog:
-		return "AccessLog"
+		return "TargetTypeAccessLog"
+	case TargetTypePProf:
+		return "TargetTypePProf"
 	default:
 		return "Unknown"
 	}

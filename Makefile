@@ -5,6 +5,7 @@ run-api:
 	PORT=${ISUMARU_PORT} \
 	SLOW_QUERY_LOG_DIR_FORMAT=${ISUMARU_SLOW_QUERY_LOG_DIR_FORMAT} \
 	ACCESS_LOG_DIR_FORMAT=${ISUMARU_ACCESS_LOG_DIR_FORMAT} \
+	PPROF_LOG_DIR_FORMAT=${ISUMARU_PPROF_LOG_DIR_FORMAT} \
 	SLP_CONFIG_PATH=${ISUMARU_SLP_CONFIG_PATH} \
 	ALP_CONFIG_PATH=${ISUMARU_ALP_CONFIG_PATH} \
 	go run cmd/isumaru/main.go
@@ -24,6 +25,6 @@ access:
 
 .PHONY: deploy
 deploy:
-	(cd web && pnpm run build)
+	(cd web && rm -rf build && pnpm run build)
 	docker build . --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest -f build/isumaru/Dockerfile
 	docker push asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest

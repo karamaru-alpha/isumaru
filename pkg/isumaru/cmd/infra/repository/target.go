@@ -12,12 +12,14 @@ import (
 )
 
 type targetRepository struct {
-	mu      sync.RWMutex
+	mu      *sync.RWMutex
 	targets entity.Targets
 }
 
 func NewTargetRepository() repository.TargetRepository {
-	return &targetRepository{}
+	return &targetRepository{
+		mu: &sync.RWMutex{},
+	}
 }
 
 func (r *targetRepository) LoadByPK(_ context.Context, targetID string, targetType constant.TargetType) (*entity.Target, error) {

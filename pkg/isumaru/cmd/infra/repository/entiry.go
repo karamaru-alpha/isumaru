@@ -12,12 +12,13 @@ import (
 )
 
 type entryRepository struct {
-	mu       sync.RWMutex
+	mu       *sync.RWMutex
 	entryMap map[string]*entity.Entry
 }
 
 func NewEntryRepository() repository.EntryRepository {
 	return &entryRepository{
+		mu:       &sync.RWMutex{},
 		entryMap: make(map[string]*entity.Entry),
 	}
 }
