@@ -11,11 +11,8 @@
     import WatsonHealthSubVolume from "carbon-icons-svelte/lib/WatsonHealthSubVolume.svelte";
     import TrashCan from "carbon-icons-svelte/lib/TrashCan.svelte";
     import {success, error} from "../../lib/toast";
+    import {targetType} from '../../lib/enum'
 
-    enum targetType {
-        slowQueryLog = 1,
-        accessLog = 2,
-    }
     let targets: {
         id: string
         type: targetType,
@@ -135,6 +132,7 @@
         >
             <SelectItem value={targetType.slowQueryLog} text="SlowQueryLog" />
             <SelectItem value={targetType.accessLog} text="AccessLog" />
+            <SelectItem value={targetType.pprof} text="PProf" />
         </Select>
         <Button kind="danger-tertiary" iconDescription="delete" icon={TrashCan} size="small" on:click={() => {
                 targets = [...targets.slice(0, index), ...targets.slice(index + 1)];

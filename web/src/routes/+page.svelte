@@ -11,17 +11,7 @@
     import Launch from "carbon-icons-svelte/lib/Launch.svelte";
     import Warning from "carbon-icons-svelte/lib/Warning.svelte";
     import {success, error} from '../lib/toast'
-
-
-    enum targetType {
-        slowQueryLog = 1,
-        accessLog = 2,
-    }
-    enum statusType {
-        progress = 1,
-        success = 2,
-        failure = 3,
-    }
+    import {targetType, statusType} from '../lib/enum'
 
     let entries: {
         id: string;
@@ -106,6 +96,8 @@
                     <Link icon={Launch} href="/accesslog/{entry.id}/{cell.value}">
                         {cell.value}
                     </Link>
+                {:else if row.type == targetType.pprof}
+                    <a>{cell.value}</a>
                 {/if}
             {:else if cell.key == "type"}
                 {targetType[cell.value]}

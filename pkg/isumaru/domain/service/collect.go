@@ -25,6 +25,7 @@ type CollectService interface {
 
 type collectService struct {
 	accessLogDirFormat    string
+	pprofDirFormat        string
 	slowQueryLogDirFormat string
 	agentPort             port.AgentPort
 	entryRepository       repository.EntryRepository
@@ -33,6 +34,7 @@ type collectService struct {
 
 func NewCollectService(
 	accessLogDirFormat string,
+	pprofDirFormat string,
 	slowQueryLogDirFormat string,
 	agentPort port.AgentPort,
 	entryRepository repository.EntryRepository,
@@ -40,6 +42,7 @@ func NewCollectService(
 ) CollectService {
 	return &collectService{
 		accessLogDirFormat,
+		pprofDirFormat,
 		slowQueryLogDirFormat,
 		agentPort,
 		entryRepository,
@@ -75,9 +78,18 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 	}()
 
 	// agentに問い合わせてReaderを取得する
-	reader, err := s.agentPort.CollectLog(ctx, target.URL, target.Path, target.Duration)
-	if err != nil {
-		return err
+	var reader io.ReadCloser
+	switch targetType {
+	case constant.TargetTypeSlowQueryLog, constant.TargetTypeAccessLog:
+		reader, err = s.agentPort.CollectLog(ctx, target.URL, target.Path, target.Duration)
+		if err != nil {
+			return err
+		}
+	case constant.TargetTypePProf:
+		reader, err = s.agentPort.PProf(ctx, target.URL, target.Duration)
+		if err != nil {
+			return err
+		}
 	}
 	defer reader.Close()
 
@@ -88,6 +100,8 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 		dir = fmt.Sprintf(s.slowQueryLogDirFormat, entryID)
 	case constant.TargetTypeAccessLog:
 		dir = fmt.Sprintf(s.accessLogDirFormat, entryID)
+	case constant.TargetTypePProf:
+		dir = fmt.Sprintf(s.pprofDirFormat, entryID)
 	}
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		return err

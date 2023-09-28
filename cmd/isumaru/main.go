@@ -17,6 +17,7 @@ func cmd() (code int) {
 		Port:                  getEnv("PORT", "8000"),
 		SlowQueryLogDirFormat: getEnv("SLOW_QUERY_LOG_DIR_FORMAT", "log/%s/slowquerylog"),
 		AccessLogDirFormat:    getEnv("ACCESS_LOG_DIR_FORMAT", "log/%s/accesslog"),
+		PProfDirFormat:        getEnv("PPROF_LOG_DIR_FORMAT", "log/%s/pprof"),
 		SlpConfigPath:         getEnv("SLP_CONFIG_PATH", "config/slp.yaml"),
 		AlpConfigPath:         getEnv("ALP_CONFIG_PATH", "config/alp.yaml"),
 	}

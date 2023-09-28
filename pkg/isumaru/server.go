@@ -23,6 +23,7 @@ type Config struct {
 	Port                  string
 	SlowQueryLogDirFormat string
 	AccessLogDirFormat    string
+	PProfDirFormat        string
 	SlpConfigPath         string
 	AlpConfigPath         string
 }
@@ -47,7 +48,7 @@ func Serve(c *Config) {
 	entryRepository := repository.NewEntryRepository()
 	targetRepository := repository.NewTargetRepository()
 
-	collectService := service.NewCollectService(c.AccessLogDirFormat, c.SlowQueryLogDirFormat, agentPort, entryRepository, targetRepository)
+	collectService := service.NewCollectService(c.AccessLogDirFormat, c.PProfDirFormat, c.SlowQueryLogDirFormat, agentPort, entryRepository, targetRepository)
 
 	settingInteractor := usecase.NewSettingInteractor(c.AlpConfigPath, c.SlpConfigPath, targetRepository)
 	collectInteractor := usecase.NewCollectInteractor(collectService, targetRepository, entryRepository)
