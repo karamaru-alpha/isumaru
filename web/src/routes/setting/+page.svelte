@@ -77,7 +77,7 @@
 
     async function saveSlpConfig() {
         try {
-            const res = await fetch("/api/api/setting/slp", {
+            const res = await fetch("/api/setting/slp", {
                 method: "POST",
                 body: JSON.stringify({
                     slpConfig,
@@ -99,7 +99,7 @@
 
     async function saveAlpConfig() {
         try {
-            const res = await fetch("/api/api/setting/alp", {
+            const res = await fetch("/api/setting/alp", {
                 method: "POST",
                 body: JSON.stringify({
                     alpConfig,

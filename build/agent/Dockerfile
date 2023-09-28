@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY cmd cmd
 COPY pkg pkg
-RUN go build -o web-agent cmd/agent/main.go
+RUN go build -o isumaru-agent cmd/agent/main.go
 
 # ==== build docker image ====
 FROM alpine:${ALPINE_VERSION}
@@ -21,5 +21,4 @@ WORKDIR /usr/src/karamaru-alpha/isumaru
 
 COPY --from=go-builder /go/src/github.com/karamaru-alpha/isumaru/isumaru-agent isumaru-agent
 
-RUN chmod +x /usr/src/karamaru-alpha/web/web-agent
-ENTRYPOINT ["/usr/src/karamaru-alpha/isumaru/isumaru-agent"]
+ENTRYPOINT ["./isumaru-agent"]
