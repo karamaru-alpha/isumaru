@@ -15,7 +15,7 @@ run-agent:
 
 .PHONY: run-web
 run-web:
-	(cd web; pnpm run dev)
+	(cd web && pnpm run dev)
 
 .PHONY: access
 access:
@@ -24,7 +24,6 @@ access:
 
 .PHONY: deploy
 deploy:
-	(cd web; pnpm run build)
-	docker build . --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru-api:latest -f build/api/Dockerfile
-	docker push asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru-api:latest
-	gcloud run services replace build/service.yaml --region=asia-northeast1 --project=karamaru
+	(cd web && pnpm run build)
+	docker build . --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest -f build/isumaru/Dockerfile
+	docker push asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest

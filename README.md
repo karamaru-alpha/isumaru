@@ -17,14 +17,14 @@ $ make run-api
 
 #### Show AccessLog
 
-cf. http://localhost:5173/accesslog/1695447044/isu1
+cf. http://localhost:5173/accesslog/[entryID]/isu1
 
 <img width="500" src="https://github.com/karamaru-alpha/isumaru/assets/38310693/7aeaa88d-f035-4e0f-b211-234ca94a48cb">
 
 
 #### Show SlowQueryLog
 
-cf. http://localhost:5173/slowquerylog/1695447044/isu1
+cf. http://localhost:5173/slowquerylog/[entryID]/isu1
 
 <img width="500" src="https://github.com/karamaru-alpha/isumaru/assets/38310693/00b99df3-267f-4272-90b1-a4c85f3144f3">
 
