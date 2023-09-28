@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
@@ -17,7 +18,7 @@ type Config struct {
 	Port string
 }
 
-func Serve(c *Config) {
+func Serve(ctx context.Context, c *Config) {
 	e := echo.New()
 	e.HideBanner = true
 	e.Validator = &customValidator{}
@@ -33,8 +34,15 @@ func Serve(c *Config) {
 	debug := e.Group("/debug")
 	debug.POST("/collect", collectHandler.Collect)
 
-	if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
-		slog.Error("failed to start web-agent server. err=%+v", err)
+	go func() {
+		if err := e.StartH2CServer(fmt.Sprintf(":%s", c.Port), &http2.Server{}); err != nil {
+			slog.Error("failed to start web-agent server. err=%+v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	if err := e.Shutdown(context.Background()); err != nil {
+		e.Logger.Fatal(err)
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/karamaru-alpha/isumaru/pkg/agent"
@@ -14,7 +15,7 @@ func cmd() (code int) {
 	config := &agent.Config{
 		Port: getEnv("PORT", "19000"),
 	}
-	agent.Serve(config)
+	agent.Serve(context.Background(), config)
 	return 0
 }
 

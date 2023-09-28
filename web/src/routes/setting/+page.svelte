@@ -29,6 +29,11 @@
     onMount(async () => {
         try {
             const res = await fetch("/api/setting")
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             const data = await res.json()
             targets = data.targets
             slpConfig = data.slpConfig
@@ -43,9 +48,9 @@
             ...targets,
             {
                 id: "isu1",
-                type: targetType.accessLog,
+                type: targetType.slowQueryLog,
                 url: "http://localhost:19000",
-                path: "/var/log/nginx/access.log",
+                path: "/var/log/mysql/slow-query.log",
                 duration: 70,
             }
         ]
@@ -53,7 +58,7 @@
 
     async function saveTarget() {
         try {
-            await fetch("/api/setting/target", {
+            const res = await fetch("/api/setting/target", {
                 method: "POST",
                 body: JSON.stringify({
                     targets,
@@ -62,6 +67,11 @@
                     "Content-Type": "application/json"
                 }
             })
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             success("Succeeded");
         } catch (e) {
             error(`Failure: ${e.message}`);
@@ -70,7 +80,7 @@
 
     async function saveSlpConfig() {
         try {
-            await fetch("/api/api/setting/slp", {
+            const res = await fetch("/api/api/setting/slp", {
                 method: "POST",
                 body: JSON.stringify({
                     slpConfig,
@@ -79,6 +89,11 @@
                     "Content-Type": "application/json"
                 }
             })
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             success("Succeeded");
         } catch (e) {
             error(`Failure: ${e.message}`);
@@ -87,7 +102,7 @@
 
     async function saveAlpConfig() {
         try {
-            await fetch("/api/api/setting/alp", {
+            const res = await fetch("/api/api/setting/alp", {
                 method: "POST",
                 body: JSON.stringify({
                     alpConfig,
@@ -96,6 +111,11 @@
                     "Content-Type": "application/json"
                 }
             })
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             success("Succeeded");
         } catch (e) {
             error(`Failure: ${e.message}`);

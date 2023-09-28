@@ -25,7 +25,6 @@ type Config struct {
 	AccessLogDirFormat    string
 	SlpConfigPath         string
 	AlpConfigPath         string
-	AgentURL              string
 }
 
 func Serve(c *Config) {
@@ -34,10 +33,10 @@ func Serve(c *Config) {
 	e.Validator = &customValidator{}
 
 	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 	e.Use(middleware.Gzip())
 	e.Use(xmiddleware.ContextMiddleware)
+	e.Use(xmiddleware.ErrorMiddleware)
 
 	e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 		Filesystem: web.BuildHTTPFS(),

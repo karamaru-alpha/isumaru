@@ -15,14 +15,6 @@ const config = {
 			fallback: "index.html"
 		})
 	},
-
-	devServer: {
-		proxy: {
-			"/api": {
-				target: "http://localhost:8000"
-			}
-		}
-	}
 };
 
 export default config;

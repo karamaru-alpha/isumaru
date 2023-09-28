@@ -37,6 +37,11 @@
     onMount(async () => {
         try {
             const res = await fetch("/api/collect")
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             const data = await res.json()
             entries = data.entries.map((e) => {
                 e.targets = e.targets.map((e, i) => {
@@ -57,9 +62,14 @@
 
     async function collect() {
         try {
-            await fetch("/api/collect", {
+            const res = await fetch("/api/collect", {
                 method: "POST",
             })
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             success("Succeeded");
         } catch (e) {
             error(`Failure: ${e.message}`);

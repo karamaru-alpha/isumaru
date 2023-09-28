@@ -27,8 +27,7 @@ type AgentCollectRequest struct {
 
 func (p *agentPort) CollectLog(_ context.Context, agentURL, path string, duration time.Duration) (io.ReadCloser, error) {
 	// ブラウザのリロードでcancelされないように別のctxを使用する
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-	defer cancel()
+	ctx := context.Background()
 	// リクエスト作成
 	requestBody, err := json.Marshal(&AgentCollectRequest{
 		Seconds: int32(duration.Seconds()),
@@ -40,7 +39,7 @@ func (p *agentPort) CollectLog(_ context.Context, agentURL, path string, duratio
 	req, err := http.NewRequestWithContext(
 		ctx,
 		http.MethodPost,
-		fmt.Sprintf("%s/collect", agentURL),
+		fmt.Sprintf("%s/debug/collect", agentURL),
 		bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
