@@ -1,14 +1,15 @@
 package standalone
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/karamaru-alpha/isumaru/pkg/agent"
 )
 
-func Run(port int) {
+func Run(ctx context.Context, port int) {
 	config := &agent.Config{
 		Port: fmt.Sprintf("%d", port),
 	}
-	agent.Serve(config)
+	agent.Serve(ctx, config)
 }

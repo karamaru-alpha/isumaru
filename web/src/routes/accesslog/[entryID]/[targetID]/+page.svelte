@@ -6,6 +6,8 @@
     } from "carbon-components-svelte";
     import Cube from "carbon-icons-svelte/lib/Cube.svelte";
     import {onMount} from "svelte";
+    import {error} from '../../../../lib/toast'
+    import { SyncLoader } from 'svelte-loading-spinners';
 
     const entryID = $page.params.entryID;
     const currentTargetID = $page.params.targetID;
@@ -15,10 +17,16 @@
         value: string
     }[];
     let rows: {}[];
+    let isLoading = true;
 
     onMount(async () => {
         try {
             const res = await fetch(`/api/accesslog/${entryID}/${currentTargetID}`)
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.message);
+            }
+
             const json = await res.json();
             targetIDs = json.targetIDs;
             const tsv = atob(json.data);
@@ -42,8 +50,9 @@
                 return row;
             });
         } catch (e) {
-            console.log(e)
+            error(`Failure: ${e.message}`);
         }
+        isLoading = false;
     });
 </script>
 
@@ -55,9 +64,23 @@
 
 <p>AccessLog ({new Date(entryID * 1000).toLocaleString()})</p>
 
+{#if isLoading}
+    <div class="flex-center">
+        <SyncLoader size="60" unit="px" duration="1s" color="#0f62fe" />
+    </div>
+{/if}
+
 <DataTable
-        sortable
-        headers={headers}
-        rows={rows}
-        size="short"
+    sortable
+    headers={headers}
+    rows={rows}
+    size="short"
 />
+
+<style>
+    .flex-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>

@@ -8,6 +8,9 @@ dependencies:
   '@sveltejs/adapter-static':
     specifier: ^2.0.3
     version: 2.0.3(@sveltejs/kit@1.24.1)
+  svelte-loading-spinners:
+    specifier: ^0.3.4
+    version: 0.3.4
 
 devDependencies:
   '@sveltejs/adapter-auto':
@@ -919,6 +922,10 @@ packages:
       svelte: ^3.19.0 || ^4.0.0
     dependencies:
       svelte: 4.2.0
+
+  /svelte-loading-spinners@0.3.4:
+    resolution: {integrity: sha512-vKaW71QMCBcTNijAGc0mUl8k3DQ66iYmp6MB8BMGCXyWk82bTrcLy8FOnSm9fE+8q6TwzD6PLUoYFHt0II93Xw==}
+    dev: false
 
   /svelte-preprocess@5.0.4(svelte@4.2.0)(typescript@5.2.2):
     resolution: {integrity: sha512-ABia2QegosxOGsVlsSBJvoWeXy1wUKSfF7SWJdTjLAbx/Y3SrVevvvbFNQqrSJw89+lNSsM58SipmZJ5SRi5iw==}
