@@ -35,11 +35,11 @@ func Serve(ctx context.Context, c *Config) {
 	collectHandler := handler.NewCollectHandler(collectInteractor)
 
 	debug := e.Group("/debug")
-	debug.GET("/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
-	debug.GET("/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
-	debug.GET("/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
-	debug.GET("/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
-	debug.GET("/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
+	debug.GET("/pprof", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
+	debug.GET("/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
+	debug.GET("/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
+	debug.GET("/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+	debug.GET("/pprof/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
 	debug.GET("/fgprof", echo.WrapHandler(fgprof.Handler()))
 	debug.POST("/collect", collectHandler.Collect)
 
