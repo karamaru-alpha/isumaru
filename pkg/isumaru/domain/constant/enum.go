@@ -26,6 +26,7 @@ type TargetType int32
 const (
 	TargetTypeSlowQueryLog TargetType = iota + 1
 	TargetTypeAccessLog
+	TargetTypeFgprof
 )
 
 func (t TargetType) String() string {
@@ -34,6 +35,8 @@ func (t TargetType) String() string {
 		return "SlowQueryLog"
 	case TargetTypeAccessLog:
 		return "AccessLog"
+	case TargetTypeFgprof:
+		return "Fgprof"
 	default:
 		return "Unknown"
 	}

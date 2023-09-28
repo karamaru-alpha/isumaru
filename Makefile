@@ -24,6 +24,6 @@ access:
 
 .PHONY: deploy
 deploy:
-	(cd web && pnpm run build)
+	(cd web && rm -rf build && pnpm run build)
 	docker build . --platform linux/amd64 -t asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest -f build/isumaru/Dockerfile
 	docker push asia-northeast1-docker.pkg.dev/karamaru/isucon/isumaru:latest

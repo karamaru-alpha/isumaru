@@ -74,14 +74,14 @@ func (s *collectService) Collect(ctx context.Context, entryID, targetID string, 
 		}
 	}()
 
-	// agentに問い合わせてスロークエリログのReaderを取得する
+	// agentに問い合わせてReaderを取得する
 	reader, err := s.agentPort.CollectLog(ctx, target.URL, target.Path, target.Duration)
 	if err != nil {
 		return err
 	}
 	defer reader.Close()
 
-	// スロークエリログをファイルに保存する
+	// ファイルに保存する
 	var dir string
 	switch targetType {
 	case constant.TargetTypeSlowQueryLog:

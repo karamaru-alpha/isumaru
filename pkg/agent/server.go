@@ -3,7 +3,10 @@ package agent
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/pprof"
 
+	"github.com/felixge/fgprof"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -32,6 +35,12 @@ func Serve(ctx context.Context, c *Config) {
 	collectHandler := handler.NewCollectHandler(collectInteractor)
 
 	debug := e.Group("/debug")
+	debug.GET("/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
+	debug.GET("/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
+	debug.GET("/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
+	debug.GET("/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+	debug.GET("/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
+	debug.GET("/fgprof", echo.WrapHandler(fgprof.Handler()))
 	debug.POST("/collect", collectHandler.Collect)
 
 	go func() {
