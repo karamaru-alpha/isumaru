@@ -18,29 +18,7 @@ type entryRepository struct {
 
 func NewEntryRepository() repository.EntryRepository {
 	return &entryRepository{
-		entryMap: map[string]*entity.Entry{
-			"1695550273": {
-				ID: "1695550273",
-				Targets: entity.EntryTargets{
-					{
-						Target: &entity.Target{
-							ID:   "isu1",
-							Type: constant.TargetTypeSlowQueryLog,
-						},
-						StatusType: constant.EntryTargetStatusTypeSuccess,
-						Error:      nil,
-					},
-					{
-						Target: &entity.Target{
-							ID:   "isu1",
-							Type: constant.TargetTypeAccessLog,
-						},
-						StatusType: constant.EntryTargetStatusTypeSuccess,
-						Error:      nil,
-					},
-				},
-			},
-		},
+		entryMap: make(map[string]*entity.Entry),
 	}
 }
 
