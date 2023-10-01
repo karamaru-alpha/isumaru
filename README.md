@@ -1,5 +1,7 @@
 ## Isumaru
 
+外部の複数サーバーに対して、スロークエリログ/アクセスログ/fgprofのメトリクスを自動化できるツールです。
+
 ### Requirements
 
 - [go](https://github.com/golang/go)
