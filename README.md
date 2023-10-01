@@ -2,6 +2,8 @@
 
 外部の複数サーバーに対して、スロークエリログ/アクセスログ/fgprofのメトリクスを自動化できるツールです。
 
+https://karamaru-alpha.com/posts/isumaru/
+
 ### Requirements
 
 - [go](https://github.com/golang/go)
